@@ -1,0 +1,29 @@
+{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
+{{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+{{ moduleLinks() }}
+<div class="container-fluid">
+    <div class="row">
+        <h3>
+            <span class="fa fa-edit"></span>
+            {{ __("Submit your information to obtain the MCI") }}
+        </h3>
+        <p>{{ __('Please lets us know who you are, an Email the Microbiology Concept Inventory can be mailed to, and the course you will be using it in. After verification, the MCI will be sent to you. All fields are required') }}</p>
+        {{ showflashes() }}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <fieldset>
+            <legend>{{ __('Request the MCI') }}</legend>
+            {{ form_row(form.name, { 'attr': {'oninvalid': "setCustomValidity('Please enter your name.')"} }) }}
+            {{ form_row(form.email, { 'attr': {'oninvalid': "setCustomValidity('Your email is not formatted correctly, please include an @ symbol')"} }) }}
+            {{ form_row(form.institution, { 'attr': {'oninvalid': "setCustomValidity('Please enter the college or university where the Microbiology Concept Inventory will be used.')"} }) }}
+            {{ form_row(form.course, { 'attr': {'oninvalid': "setCustomValidity('Please indicate the course(s) where the MCI will be administered.')"} }) }}
+        </fieldset>
+        <div class="form-group">
+            <div class="col-lg-offset-3 col-lg-9">
+                {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+    </div>
+{{ render(controller('ZikulaAdminModule:Admin:adminfooter')) }}

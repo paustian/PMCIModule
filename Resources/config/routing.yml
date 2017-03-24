@@ -1,0 +1,3 @@
+pmcimodule:
+    resource: "@PaustianPMCIModule/Controller"
+    type:     annotation
