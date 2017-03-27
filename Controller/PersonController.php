@@ -11,11 +11,10 @@ use Paustian\PMCIModule\Entity\PersonEntity;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use Paustian\PMCIModule\Form\Person;
+use Swift_Message;
 /**
  * @Route("/person")
  */
@@ -31,12 +30,7 @@ class PersonController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function indexAction(Request $request) {
-        //security check
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the PMCI admin interface.'));
-        }
-        // Return a page of menu items.
-        return $this->render('PaustianPMCIModule:Person:pmci_person_menu.html.twig');
+        return $this->editAction($request);
     }
 
     /**
@@ -51,15 +45,24 @@ class PersonController extends AbstractController {
      */
     public function editAction(Request $request, PersonEntity $person = null) {
         $doMerge = false;
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('status', $this->__('You need to register as a user before you can obtain the MCI.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+        $uid = $currentUserApi->get('uid');
         if (null === $person) {
             if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
                 throw new AccessDeniedException($this->__("You do not have permission to edit the persons in the MCI."));
             }
             $person = new PersonEntity();
+            $person->setUserId($uid);
+            $person->setEmail($currentUserApi->get('email'));
+            $person->setName($currentUserApi->get('uname'));
         } else {
             //to edit a person, you either need to be that user or be an admin
-            $currentUserApi = $this->get('zikula_users_module.current_user');
-            $uid = $currentUserApi->get('uid');
             $userID = $person->getUserId();
             if ( ($uid != $userID) && (!$this->hasPermission($this->name . '::', $person->getId() . '::', ACCESS_ADD))) {
                 throw new AccessDeniedException($this->__("You do not have permission to edit this person's information."));
@@ -73,15 +76,32 @@ class PersonController extends AbstractController {
         $form->handleRequest($request);
 
         if ($form->isValid()) {
-            $em = $this->getDoctrine()->getManager();
-            if ($doMerge) {
-                $em->merge($person);
-            } else {
-                $em->persist($person);
-            }
-            $em->flush();
+            $formData = $form->getData();
 
-            $this->addFlash('status', 'Thank you for submitting your request. It will be authorized within 1 business day.');
+            //Now notify the admin that someone wants the MCI
+            $message = Swift_Message::newInstance();
+            $variableApi = $this->get('zikula_extensions_module.api.variable');
+            $mailer = $this->get('zikula_mailer_module.api.mailer');
+            $adminMail = $variableApi->getSystemVar('adminmail');
+            $siteName = $variableApi->getSystemVar('sitename');
+            $message->setFrom([$formData['email'] => $formData['name']]);
+            $message->setTo([$adminMail => $siteName]);
+            $msgBody = $formData['name'] . __('of') . $formData['institution'] .  __('has requested a copy of the MCI. Please email it to the address:' . $formData['email']);
+
+            $result = $mailer->sendMessage($message, 'A request for the MCI', $msgBody);
+            if(!$result) {
+                $this->addFlash('status', 'Your messaged failed, please check your email address and name.');
+            } else {
+                $this->addFlash('status', 'Thank you for submitting your request. It will be authorized within 1 business day.');
+                //now save the data back to the
+                $em = $this->getDoctrine()->getManager();
+                if ($doMerge) {
+                    $em->merge($person);
+                } else {
+                    $em->persist($person);
+                }
+                $em->flush();
+            }
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
@@ -99,7 +119,7 @@ class PersonController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function deleteAction(Request $request, PersonEntity $person) {
-        $response = $this->redirect($this->generateUrl('paustianpmcimodule_admin_editperson'));
+        $response = $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         if (null == $person) {
             //you want the edit interface, which has a delete option.
             return $response;
@@ -123,8 +143,11 @@ class PersonController extends AbstractController {
      * @return Response
      */
     public function modifyAction(Request $request) {
+        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
+            throw new AccessDeniedException($this->__("You do not have permission to edit a person."));
+        }
         $em = $this->getDoctrine()->getManager();
         $people = $em->getRepository("Paustian\PMCIModule\Entity\PersonEntity")->findAll();
-        return $this->render('PaustianPMCIModule:Admin:pmci_admin_modifyperson.html.twig', ['people' => $people]);
+        return $this->render('PaustianPMCIModule:Person:pmci_person_modifyperson.html.twig', ['people' => $people]);
     }
 }

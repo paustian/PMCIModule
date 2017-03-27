@@ -4,6 +4,7 @@ namespace Paustian\PMCIModule\Entity;
 use Zikula\Core\Doctrine\EntityAccess;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
+
 /**
  * PMCISurveyEntity entity class
  *
@@ -36,13 +37,28 @@ class SurveyEntity extends EntityAccess {
     private $prePost;
     
     /**
-     * @ORM\Column(type="date", name="surveyDate")
+     * @ORM\Column(type="date")
      * @Assert\Date()
      */
-    private $surveyDate;
+    public $surveyDate;
 
+    /**
+     *
+     * institution field (record school)
+     * @ORM\Column(type="text")
+     * @Assert\NotBlank()
+     */
+    private $institution;
 
-    
+    /**
+     * course
+     *
+     * @ORM\Column(type="text")
+     * @Assert\NotBlank()
+     *
+     */
+    private $course;
+
     /**
      * Constructor 
      */
@@ -102,20 +118,54 @@ class SurveyEntity extends EntityAccess {
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getSurveyDate()
     {
-        return $this->surveyDate;
+        $this->surveyDate;
     }
 
     /**
-     * @param mixed $surveyDate
+     * @param \DateTime $surveyDate
      */
-    public function setSurveyDate($surveyDate)
+    public function setSurveyDate(\DateTime $surveyDate)
     {
         $this->surveyDate = $surveyDate;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getInstitution()
+    {
+        return $this->institution;
+    }
+
+    /**
+     * @param mixed $institution
+     */
+    public function setInstitution($institution)
+    {
+        $this->institution = $institution;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getCourse()
+    {
+        return $this->course;
+    }
+
+    /**
+     * @param mixed $course
+     */
+    public function setCourse($course)
+    {
+        $this->course = $course;
+    }
+
+
 }
 
 

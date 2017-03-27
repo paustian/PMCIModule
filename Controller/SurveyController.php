@@ -26,13 +26,14 @@
 
 namespace Paustian\PMCIModule\Controller;
 
+
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\RouterInterface;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 use Paustian\PMCIModule\Entity\SurveyEntity;
+use Paustian\PMCIModule\Form\Survey;
+use Paustian\PMCIModule\Form\SurveyUpload;
 
 /**
  * @Route("/survey")
@@ -44,13 +45,15 @@ class SurveyController extends AbstractController {
      * 
      * @param $request
      * @return $response
+     *
+     * The default action is to submit MCI data into the database. This will date the survey and then absorb all the responses from the MCI data
+     * The format is a csv file that contains the questions as downloaded from the a qualtrics survey
      */
     public function indexAction(Request $request) {
 // Security check
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
         }
-
         $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
         return $response ;
     }
@@ -58,20 +61,140 @@ class SurveyController extends AbstractController {
     /**
      *
      * @Route("/edit/{survey}")
-     * Edit or Delete a person using the MCI. This allows changes to a person
+     * Edit or Delete a survey from MCI. This also deletes all mci data attached to the survey.
      * @param $request
      * @param $survey
      * @return $response The rendered output of the modifyconfig template.
      *
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
-    public function editAction(Request $request, SurveyEntity $survey = null) {
-        $doMerge = false;
+    public function editAction(Request $request, SurveyEntity $survey=null)
+    {
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
+        }
+        if($survey == null){
+            return $this->redirect($this->generateUrl('paustianpmcimodule_survey_modify'));
+        }
+        //Find the person
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        $uid = $currentUserApi->get('uid');
+        $form = $this->createForm(new Survey(), $survey);
 
-        $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            $survey->setUserId($uid);
+            $em = $this->getDoctrine()->getManager();
+            $em->merge($survey);
+            //The data needs to be flushed to get the survey ID. Once we have this, we can then
+            $em->flush();
+            $this->addFlash('status', $this->__('Your survey data has been saved'));
+        }
+        $response = $this->render('PaustianPMCIModule:Survey:survey_edit.html.twig', array('form' => $form->createView(),));
+        return $response;
+    }
+    /**
+     *
+     * @Route("/upload/")
+     * Upload survey data for the MCI.
+     * @param $request
+     * @return $response The rendered output of the upload template.
+     *
+     * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
+     */
+    public function uploadAction(Request $request) {
+       if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+            throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
+        }
+        $survey = new SurveyEntity();
+
+       //Find the person
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        $uid = $currentUserApi->get('uid');
+        $em = $this->getDoctrine()->getManager();
+        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->findOneBy(['userId' => $uid]);
+        //Set up some default values for the survey. These can be edited if they need to.
+        $survey->setInstitution($person->getInstitution());
+        $survey->setCourse($person->getCourse());
+        $form = $this->createForm(new SurveyUpload(), $survey);
+
+        $form->handleRequest($request);
+
+        if ($form->isValid()) {
+            //Grab the contents of the file.
+            $file = $form['file']->getData();
+            $extension = $file->guessExtension();
+            if($extension == 'csv' || $extension == 'txt'){
+                $csv = $this->_parseCsv($file);
+                $error = $this->_validateCSV($csv);
+                if($error != ''){
+                    $this->addFlash('error', "Your csv file is not in the correct format, please re-read the documentation below. If you are using excel, make sure you save in csv format, not UTF-8 csv format: $error");
+                    return $this->redirect($this->generateUrl('paustianpmcimodule_survey_upload'));
+                }
+                //Ok we have valid data so enter the survey data first
+                $surveyDate = $form['surveyDate']->getData();
+                $prePost = $form['prepost']->getData();
+                $survey->setUserId($uid);
+                $survey->setPrePost($prePost);
+                $survey->setSurveyDate($surveyDate);
+                $em->persist($survey);
+                //The data needs to be flushed to get the survey ID. Once we have this, we can then
+                $em->flush();
+                $surveyID = $survey->getId();
+               foreach($csv as $studentData){
+                    $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
+                    $mciData->setSurveyId($surveyID);
+                    $mciData->setRespDate($surveyDate);
+                    $em->persist($mciData);
+                }
+                $em->flush();
+                $this->addFlash('status', $this->__('Your survey data has been saved'));
+            }
+        }
+        $response = $this->render('PaustianPMCIModule:Survey:survey_upload.html.twig', array('form' => $form->createView(),));
         return $response ;
     }
 
+    /**
+     * Grab the csv file and then arrange it into an array of arrays. Each array has the header values
+     * as the keys to the array. I need to make sure this doesn't do bad things if poor text is added.
+     * see comments for http://php.net/manual/en/function.file.php for an explanation of this code.
+     *
+     * @param $file
+     * @return array
+     */
+    private function _parseCsv($file){
+        $csv = array_map('str_getcsv', file($file->getPathname()));
+        array_walk($csv, function(&$a) use ($csv) {
+            $a = array_combine($csv[0], $a);
+        });
+        array_shift($csv); # remove column header
+        return $csv;
+    }
+
+    /**
+     * For an array to be valid, it must have the StudentID key and Q1 to Q23
+     * this checks for each of those keys
+     * @param $cvs
+     * @return bool
+     */
+    private function _validateCSV($csv){
+        if(!is_array($csv)){
+            return false;
+        }
+        $firstLine = $csv[0];
+        if(!array_key_exists('StudentID', $firstLine)){
+            return 'StudentID is missing';
+        }
+        for($i=1;$i<24;$i++){
+            $key = 'Q' . $i;
+            if(!array_key_exists($key, $firstLine)){
+                return "$key is missing";
+            }
+        }
+        return '';
+    }
     /**
      * @Route("/delete/{survey}")
      * @param  $request
@@ -92,7 +215,11 @@ class SurveyController extends AbstractController {
      * @return $response
      */
     public function modifyAction(Request $request) {
-        $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
-        return $response ;
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        $uid = $currentUserApi->get('uid');
+        $em = $this->getDoctrine()->getManager();
+        $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);
+        $response = $this->render('PaustianPMCIModule:Survey:survey_modify.html.twig', ['surveys' => $surveys]);
+        return $response;
     }
 }

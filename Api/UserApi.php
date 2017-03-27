@@ -40,14 +40,14 @@ class UserApi extends \Zikula_AbstractApi
         $submenuLinks = [];
         $submenuLinks[] = [
             'url' => $this->get('router')->generate('paustianpmcimodule_person_edit'),
-            'text' => 'empty']; //$this->__('Get the MCI'));
+            'text' => $this->__('Register to recieve the MCI')];
         $submenuLinks[] = [
-            'url' => '', //$this->get('router')->generate('paustianpmcimodule_survey_submit'),
-            'text' => 'empty also']; //$this->__('Submit your MCI results'));
+            'url' => $this->get('router')->generate('paustianpmcimodule_survey_edit'),
+            'text' => $this->__('Submit your MCI results')];
 
         $links[] = [
-            'url' => '', //$this->get('router')->generate('paustianpmcimodule_survey_get'),
-            'text' => 'empty', //$this->__('Get the MCI'),
+            'url' => $this->get('router')->generate('paustianpmcimodule_person_edit'),
+            'text' => 'User Requests', //$this->__('Get the MCI'),
             'icon' => 'pencil',
             'links' => $submenuLinks];
 

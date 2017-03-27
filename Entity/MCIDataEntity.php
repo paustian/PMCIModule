@@ -25,7 +25,7 @@ class MCIDataEntity extends EntityAccess
     /**
      * studentId field (record studentId)
      *
-     * @ORM\Column(type="integer", length=20)
+     * @ORM\Column(type="bigint", length=20)
      */
     private $studentId;
 
@@ -180,32 +180,95 @@ class MCIDataEntity extends EntityAccess
     private $q23Resp;
 
     /**
+     * gpa
+     * @ORM\Column(type="integer", length=4)
+     * 1=3.5 and above
+     * 2=3.0 - 3.49
+     * 3=2.5 - 2.99
+     * 4=2.0 - 2.49
+     * 5=below 2
+     */
+    private $gpa;
+
+    /**
      * 
      * race field (record race)
-     * $ORM\Column(type="integer", length="2")
+     * @ORM\Column(type="integer", length=2)
+     * 1=American Indian/Alaskan Native
+     * 2=Black or African American
+     * 3=Asian or Pacific Islander
+     * 4=Hispanic/Latino
+     * 5=White
+     * 6=Other or Not reported
      */
     private $race;
 
     /**
      *
      * age field (record age)
-     * $ORM\Column(type="integer", length="4")
+     * $ORM\Column(type="integer", length=4)
      */
     private $age;
 
     /**
-     *
-     * school field (record school)
-     * $ORM\Column(type="integer", length="2")
+     * major
+     * @ORM\Column(type="text")
      */
-    private $school;
-    
-    
+    private $major;
+
+    /**
+     * esl
+     * @ORM\Column(type="integer", length=2)
+     */
+    private $esl;
+
+    /**
+     * sex
+     * @ORM\Column(type="integer", length=2)
+     * 1=male
+     * 2=female
+     * 3=other
+     */
+    private $sex;
+
     /**
      * Constructor 
      */
-    public function __construct()
+    public function __construct(array $inData=null)
     {
+        if($inData != null){
+            $this->studentId = $inData['StudentID'];
+            $this->q1Resp = $inData['Q1'];
+            $this->q2Resp = $inData['Q2'];
+            $this->q3Resp = $inData['Q3'];
+            $this->q4Resp = $inData['Q4'];
+            $this->q5Resp = $inData['Q5'];
+            $this->q6Resp = $inData['Q6'];
+            $this->q7Resp = $inData['Q7'];
+            $this->q8Resp = $inData['Q8'];
+            $this->q9Resp = $inData['Q9'];
+            $this->q10Resp = $inData['Q10'];
+            $this->q11Resp = $inData['Q11'];
+            $this->q12Resp = $inData['Q12'];
+            $this->q13Resp = $inData['Q13'];
+            $this->q14Resp = $inData['Q14'];
+            $this->q15Resp = $inData['Q15'];
+            $this->q16Resp = $inData['Q16'];
+            $this->q17Resp = $inData['Q17'];
+            $this->q18Resp = $inData['Q18'];
+            $this->q19Resp = $inData['Q19'];
+            $this->q20Resp = $inData['Q20'];
+            $this->q21Resp = $inData['Q21'];
+            $this->q22Resp = $inData['Q22'];
+            $this->q23Resp = $inData['Q23'];
+            array_key_exists('Gpa', $inData) ? $this->gpa = $inData['Gpa']: $this->gpa = 0;
+            array_key_exists('Sex', $inData) ? $this->sex = $inData['Sex']: $this->sex = 4;
+            array_key_exists('Race', $inData) ? $this->race = $inData['Race']: $this->race = 6;
+            array_key_exists('Major', $inData) ? $this->major = $inData['Major']: $this->Major = '';
+            array_key_exists('Age', $inData) ? $this->age = $inData['Age']: $this->age = 0;
+            array_key_exists('Esl', $inData) ? $this->esl = $inData['Esl']: $this->esl = 2;
+
+        }
     }
 
     /**
@@ -257,7 +320,7 @@ class MCIDataEntity extends EntityAccess
     }
 
     /**
-     * @return mixed
+     * @return \DateTime
      */
     public function getRespDate()
     {
@@ -265,12 +328,13 @@ class MCIDataEntity extends EntityAccess
     }
 
     /**
-     * @param mixed $respDate
+     * @param \DateTime $respDate
      */
-    public function setRespDate($respDate)
+    public function setRespDate(\DateTime $respDate)
     {
         $this->respDate = $respDate;
     }
+
 
     /**
      * @return mixed
@@ -643,6 +707,22 @@ class MCIDataEntity extends EntityAccess
     /**
      * @return mixed
      */
+    public function getGpa()
+    {
+        return $this->gpa;
+    }
+
+    /**
+     * @param mixed $gpa
+     */
+    public function setGpa($gpa)
+    {
+        $this->gpa = $gpa;
+    }
+
+    /**
+     * @return mixed
+     */
     public function getRace()
     {
         return $this->race;
@@ -687,6 +767,56 @@ class MCIDataEntity extends EntityAccess
     {
         $this->school = $school;
     }
+
+    /**
+     * @return mixed
+     */
+    public function getMajor()
+    {
+        return $this->major;
+    }
+
+    /**
+     * @param mixed $major
+     */
+    public function setMajor($major)
+    {
+        $this->major = $major;
+    }
+
+    /**
+     * @return mixed
+    */
+    public function getEsl()
+    {
+        return $this->esl;
+    }
+
+    /**
+     * @param mixed $isl
+     */
+    public function setEsl($esl)
+    {
+        $this->esl = $esl;
+    }
+
+    /**
+     * @return mixed
+     */
+    public function getSex()
+    {
+        return $this->sex;
+    }
+
+    /**
+     * @param mixed $sex
+     */
+    public function setSex($sex)
+    {
+        $this->sex = $sex;
+    }
+
+
 }
 
 

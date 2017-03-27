@@ -1,0 +1,27 @@
+{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
+{{ moduleLinks() }}
+<div class="container-fluid">
+    <div class="row">
+        <h3>
+            <span class="fa fa-edit"></span>
+            {{ __("Edit your survey information") }}
+        </h3>
+        {{ showflashes() }}
+        {{ form_start(form) }}
+        {{ form_errors(form) }}
+        <fieldset>
+            <legend>{{ __('Edit MCI Survey Information') }}</legend>
+            {{ form_row(form.prepost) }}
+            {{ form_row(form.surveyDate) }}
+            {{ form_row(form.institution) }}
+            {{ form_row(form.course) }}
+            {{ form_row(form.savedata) }}
+        </fieldset>
+        <div class="form-group">
+            <div class="col-lg-offset-3 col-lg-9">
+                {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
+            </div>
+        </div>
+        {{ form_end(form) }}
+    </div>
+</div>
