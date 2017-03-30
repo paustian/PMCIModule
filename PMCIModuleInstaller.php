@@ -2,14 +2,14 @@
 
 namespace Paustian\PMCIModule;
 
-use Zikula\Core\ExtensionInstallerInterface;
+use Paustian\PMCIModule\Entity\MCIDataEntity;
+use vakata\database\Exception;
 use Zikula\Core\AbstractBundle;
-use Symfony\Component\DependencyInjection\ContainerAwareInterface;
+use Zikula\Core\AbstractExtensionInstaller;
 use Symfony\Component\DependencyInjection\ContainerInterface;
-use DoctrineHelper;
 
 
-class PMCIModuleInstaller implements ExtensionInstallerInterface, ContainerAwareInterface {
+class PMCIModuleInstaller extends AbstractExtensionInstaller {
 
  
     
@@ -18,18 +18,9 @@ class PMCIModuleInstaller implements ExtensionInstallerInterface, ContainerAware
             'Paustian\PMCIModule\Entity\SurveyEntity',
             'Paustian\PMCIModule\Entity\MCIDataEntity'
         );
-    
-    private $entityManager;
+
     /**
-     * @var ContainerInterface
-     */
-    private $container;
-    /**
-     * @var AbstractBundle
-     */
-    private $bundle;
-    /**
-     * initialise the book module
+     * initialise the pmci module
      * This function is only ever called once during the lifetime of a particular
      * module instance
      */
@@ -38,16 +29,17 @@ class PMCIModuleInstaller implements ExtensionInstallerInterface, ContainerAware
         $this->entityManager = $this->container->get('doctrine.entitymanager');
         //Create the tables of the module. Book has 5
         try {
-            DoctrineHelper::createSchema($this->entityManager, $this->entities);
+            $this->schemaTool->create($this->entities);
         } catch (Exception $e) {
             return false;
         }
+        $this->_defaultData();
 
         return true;
     }
 
     /**
-     * upgrade the book module from an old version
+     * upgrade the pmci module from an old version
      * This function can be called multiple times
      */
     public function upgrade($oldversion) {
@@ -57,41 +49,60 @@ class PMCIModuleInstaller implements ExtensionInstallerInterface, ContainerAware
     }
 
     /**
-     * delete the book module
+     * delete the pmci module data
      * This function is only ever called once during the lifetime of a particular
      * module instance
      */
     public function uninstall() {
-        // create tables
-        $this->entityManager = $this->container->get('doctrine.entitymanager');
-        //drop the tables
-        DoctrineHelper::dropSchema($this->entityManager, $this->entities);
 
+        //drop the tables
+        try {
+            $this->schemaTool->drop($this->entities);
+        } catch(Exception $e){
+            $this->addFlash('error', $e->getMessage());
+            return false;
+        }
         // Deletion successful
         return true;
     }
-    
-    public function setBundle(AbstractBundle $bundle)
-    {
-        $this->bundle = $bundle;
-    }
-    
-    /**
-     * Sets the Container.
-     *
-     * @param ContainerInterface|null $container A ContainerInterface instance or null
-     *
-     * @api
-     */
-    public function setContainer(ContainerInterface $container = null)
-    {
-        $this->container = $container;
-        $this->setTranslator($container->get('translator'));
-    }
 
-    public function setTranslator($translator)
-    {
-        $this->translator = $translator;
+    /**
+     * put the key in as the first piece of data. This can be called upon to grade  items.
+     */
+    private function _defaultData(){
+        //
+        $key = [
+            'StudentID' => 0,
+            'Q1' => 4,
+            'Q2' => 1,
+            'Q3' => 2,
+            'Q4' => 1,
+            'Q5' => 4,
+            'Q6' => 2,
+            'Q7' => 3,
+            'Q8' => 2,
+            'Q9' => 4,
+            'Q10' => 3,
+            'Q11' => 1,
+            'Q12' => 3,
+            'Q13' => 3,
+            'Q14' => 1,
+            'Q15' => 4,
+            'Q16' => 1,
+            'Q17' => 2,
+            'Q18' => 1,
+            'Q19' => 3,
+            'Q20' => 2,
+            'Q21' => 4,
+            'Q22' => 3,
+            'Q23' => 4,
+        ];
+        $mciData = new MCIDataEntity($key);
+        $mciData->setSurveyId(0);
+        $mciData->setRespDate(new \DateTime());
+        $mciData->setMajor('key');
+        $this->entityManager->persist($mciData);
+        $this->entityManager->flush();
     }
 }
 

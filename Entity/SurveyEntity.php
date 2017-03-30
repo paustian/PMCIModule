@@ -66,7 +66,7 @@ class SurveyEntity extends EntityAccess {
 
         $this->userId = 0;
         $this->prePost= 0;
-        $this->surveyDate=0;
+        $this->surveyDate = new \DateTime();
     }
 
     /**
@@ -122,7 +122,7 @@ class SurveyEntity extends EntityAccess {
      */
     public function getSurveyDate()
     {
-        $this->surveyDate;
+        return $this->surveyDate;
     }
 
     /**

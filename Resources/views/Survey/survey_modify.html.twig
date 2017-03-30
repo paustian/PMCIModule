@@ -23,7 +23,7 @@
                 {%  else %}
                 <td>Pre-survey</td>
                 {% endif %}
-                <td>{{ survey.surveyDate.date }}</td>
+                <td>{{ survey.surveyDate|date("m/d/Y") }}</td>
                 <td class="actions">
                     <a href="{{ path('paustianpmcimodule_survey_edit', { survey: survey.id }) }}" class="fa fa-pencil" title="{{ __('Edit a survey') }}"></a>
                     <a href="{{ path('paustianpmcimodule_survey_delete', { survey: survey.id }) }}" class="fa fa-trash-o" title="{{ __('Delete a Survey') }}" onclick="return confirm('Are you sure you want to delete this survey? Doing so will delete all survey responses')"></a>

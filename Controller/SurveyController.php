@@ -203,8 +203,24 @@ class SurveyController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function deleteAction(Request $request, SurveyEntity $survey) {
-        $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
-        return $response ;
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_DELETE)) {
+            throw new AccessDeniedException(__('You do not have pemission to delete the surveys. Please request a copy of the MCI and register.'));
+        }
+        //we need to delete all the responses from this survey also
+        //To conserve memory and do this quickly we write it in dql
+        $em = $this->getDoctrine()->getManager();
+        $surveyId = $survey->getId();
+        $q =  $em->createQuery("delete from Paustian\PMCIModule\Entity\MCIDataEntity m where m.surveyId = " . $surveyId);
+        $numDeleted = $q->execute();
+
+        //now delete the survey
+        $em->remove($survey);
+        $em->flush();
+
+        $this->addFlash('status', "Your survey was deleted, along with $numDeleted survey responses.");
+
+        //finally redirect to the modify interface
+        return $this->redirect($this->generateUrl('paustianpmcimodule_survey_modify'));
     }
 
 
@@ -219,6 +235,7 @@ class SurveyController extends AbstractController {
         $uid = $currentUserApi->get('uid');
         $em = $this->getDoctrine()->getManager();
         $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);
+
         $response = $this->render('PaustianPMCIModule:Survey:survey_modify.html.twig', ['surveys' => $surveys]);
         return $response;
     }
