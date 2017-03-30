@@ -32,7 +32,7 @@ class AnalysisController extends AbstractController {
             throw new AccessDeniedException(__('You do not have pemission to access the analysis interface.'));
         }
 
-        
+
         // Return a page of menu items.
         $response = new Response($this->render('PaustianPMCIModule:Analysis:pmci_analysis_index.html.twig'));
         return $response;

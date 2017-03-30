@@ -8,7 +8,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  * Response entity class
  *
  * Annotations define the entity mappings to database.
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Paustian\PMCIModule\Entity\Repository\MCIDataEntityRepository")
  * @ORM\Table(name="pmci_data")
  */
 class MCIDataEntity extends EntityAccess
@@ -206,7 +206,7 @@ class MCIDataEntity extends EntityAccess
     /**
      *
      * age field (record age)
-     * $ORM\Column(type="integer", length=4)
+     * @ORM\Column(type="integer", length=4)
      */
     private $age;
 
