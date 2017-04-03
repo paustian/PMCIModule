@@ -95,7 +95,7 @@ class SurveyController extends AbstractController {
         return $response;
     }
     /**
-     *
+     * Upload MCI survey data to the database.
      * @Route("/upload/")
      * Upload survey data for the MCI.
      * @param $request
@@ -107,16 +107,18 @@ class SurveyController extends AbstractController {
        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
             throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
         }
-        $survey = new SurveyEntity();
-
-       //Find the person
-        $currentUserApi = $this->get('zikula_users_module.current_user');
-        $uid = $currentUserApi->get('uid');
+        //Find the person
         $em = $this->getDoctrine()->getManager();
-        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->findOneBy(['userId' => $uid]);
-        //Set up some default values for the survey. These can be edited if they need to.
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
+        if($person == null){
+            $this->addFlash('error', $this->__('You have to register first before you can upload surveys'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
+        }
+        $survey = new SurveyEntity();
         $survey->setInstitution($person->getInstitution());
         $survey->setCourse($person->getCourse());
+        //Set up some default values for the survey. These can be edited if they need to.
         $form = $this->createForm(new SurveyUpload(), $survey);
 
         $form->handleRequest($request);
@@ -125,9 +127,10 @@ class SurveyController extends AbstractController {
             //Grab the contents of the file.
             $file = $form['file']->getData();
             $extension = $file->guessExtension();
+            $surveyRepo = $em->getRepository('Paustian\PMCIModule\Entity\SurveyEntity');
             if($extension == 'csv' || $extension == 'txt'){
-                $csv = $this->_parseCsv($file);
-                $error = $this->_validateCSV($csv);
+                $csv = $surveyRepo->parseCsv($file);
+                $error = $surveyRepo->validateCSV($csv);
                 if($error != ''){
                     $this->addFlash('error', "Your csv file is not in the correct format, please re-read the documentation below. If you are using excel, make sure you save in csv format, not UTF-8 csv format: $error");
                     return $this->redirect($this->generateUrl('paustianpmcimodule_survey_upload'));
@@ -135,6 +138,7 @@ class SurveyController extends AbstractController {
                 //Ok we have valid data so enter the survey data first
                 $surveyDate = $form['surveyDate']->getData();
                 $prePost = $form['prepost']->getData();
+                $uid = $currentUserApi->get('uid');
                 $survey->setUserId($uid);
                 $survey->setPrePost($prePost);
                 $survey->setSurveyDate($surveyDate);
@@ -156,45 +160,6 @@ class SurveyController extends AbstractController {
         return $response ;
     }
 
-    /**
-     * Grab the csv file and then arrange it into an array of arrays. Each array has the header values
-     * as the keys to the array. I need to make sure this doesn't do bad things if poor text is added.
-     * see comments for http://php.net/manual/en/function.file.php for an explanation of this code.
-     *
-     * @param $file
-     * @return array
-     */
-    private function _parseCsv($file){
-        $csv = array_map('str_getcsv', file($file->getPathname()));
-        array_walk($csv, function(&$a) use ($csv) {
-            $a = array_combine($csv[0], $a);
-        });
-        array_shift($csv); # remove column header
-        return $csv;
-    }
-
-    /**
-     * For an array to be valid, it must have the StudentID key and Q1 to Q23
-     * this checks for each of those keys
-     * @param $cvs
-     * @return bool
-     */
-    private function _validateCSV($csv){
-        if(!is_array($csv)){
-            return false;
-        }
-        $firstLine = $csv[0];
-        if(!array_key_exists('StudentID', $firstLine)){
-            return 'StudentID is missing';
-        }
-        for($i=1;$i<24;$i++){
-            $key = 'Q' . $i;
-            if(!array_key_exists($key, $firstLine)){
-                return "$key is missing";
-            }
-        }
-        return '';
-    }
     /**
      * @Route("/delete/{survey}")
      * @param  $request

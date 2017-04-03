@@ -10,7 +10,7 @@ use Symfony\Component\Validator\Constraints as Assert;
  *
  * Annotations define the entity mappings to database.
  *
- * @ORM\Entity
+ * @ORM\Entity(repositoryClass="Paustian\PMCIModule\Entity\Repository\SurveyEntityRepository")
  * @ORM\Table(name="pmci_surveys")
  */
 class SurveyEntity extends EntityAccess {
@@ -165,7 +165,9 @@ class SurveyEntity extends EntityAccess {
         $this->course = $course;
     }
 
-
+    public function getDisplayName(){
+        return $this->institution . "-" . $this->course . "-" . $this->getSurveyDate()->format('m-d-Y');
+    }
 }
 
 

@@ -49,10 +49,11 @@ class PersonController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('status', $this->__('You need to register as a user before you can obtain the MCI.'));
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
         $uid = $currentUserApi->get('uid');
+
         if (null === $person) {
             if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
                 throw new AccessDeniedException($this->__("You do not have permission to edit the persons in the MCI."));
@@ -105,9 +106,9 @@ class PersonController extends AbstractController {
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
-        return $this->render('PaustianPMCIModule:Person:pmci_person_edit.html.twig', array(
-                    'form' => $form->createView(),
-        ));
+        return $this->render('PaustianPMCIModule:Person:pmci_person_edit.html.twig', [
+                    'form' => $form->createView(),]
+        );
     }
 
     /**

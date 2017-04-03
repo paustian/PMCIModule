@@ -1,4 +1,7 @@
 {% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
+{% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
+    {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+{% endif %}
 {{ moduleLinks() }}
 <div class="container-fluid">
     <div class="row">

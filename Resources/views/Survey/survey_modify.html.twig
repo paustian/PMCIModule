@@ -1,6 +1,7 @@
 {% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
 {% endif %}
+{{ moduleLinks() }}
 <div class="container-fluid">
     {{ showflashes() }}
     <h3>{{ __('Chose a Survey to Edit or Delete') }}</h3>
