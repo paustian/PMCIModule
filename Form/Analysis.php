@@ -8,6 +8,7 @@
 
 namespace Paustian\PMCIModule\Form;
 
+use Doctrine\DBAL\Types\FloatType;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\FormBuilderInterface;
@@ -89,6 +90,38 @@ class Analysis extends AbstractType
                 'label' => __('English as a Second Language'),
                 'choices' => ['0' => 'No',
                     '1' => 'Yes',],])
+
+            ->add('ageOpt', ChoiceType::class, [
+                'label' => __('Pick an age operator'),
+                'choices' => ['0' => '=',
+                    '1' => '>',
+                    '2' => '<',],
+                'required' => false,])
+            ->add('age', ChoiceType::class, [
+                    'label' => __('Pick an age'),
+                    'required' => false,
+                    'choices' => ['0' => 'All',
+                        '1' => '18-20',
+                        '2' => '21-25',
+                        '3' => '26-30',
+                        '4' => '31-35',
+                        '5' => '36-40',
+                        '6' => '41-45',
+                        '7' => '46-55',
+                        '8' => '56-65',
+                        '9' => '>65',],
+                    ])
+
+            ->add('gpa', ChoiceType::class, [
+                'label' => __('Pick a gpa'),
+                'required' => false,
+                'choices' => ['1'=> '> 3.5',
+                            '2' => '3.0-3.49',
+                            '3' => '2.5-3.0',
+                            '4' => '2.0-2.5',
+                            '5' => '< 2.0',],
+                'required' => false,])
+
             ->add('add', 'submit', array('label' => 'Submit'));
 
     }

@@ -90,15 +90,25 @@ class AnalysisController extends AbstractController {
             $options = [];
             $race = $form->get('race')->getData();
             if($race != 0){
-                $options['race'] = $race;
+                $options[] = ['=', 'race', $race];
             }
             $sex = $form->get('sex')->getData();
             if($sex != 0){
-                $options['sex'] = $sex;
+                $options[] = ['=', 'sex', $sex];
             }
             $esl = $form->get('esl')->getData();
             if($esl != 0){
-                $options['esl'] = $esl;
+                $options[] = ['=', 'esl', $esl];
+            }
+            $operators = ['=', '>', '<'];
+            $ageOpt = $form->get('ageOpt')->getData();
+            $age = $form->get('age')->getData();
+            if(($ageOpt !== null) && ($age !== null)){
+                $options[] = [$operators[$ageOpt], 'age', $age];
+            }
+            $gpa = $form->get('gpa')->getData();
+            if($gpa !== null){
+                $options[] = ['=', 'gpa', $gpa];
             }
             $em = $this->getDoctrine()->getManager();
             //grab the key from the database. This is the first entry.

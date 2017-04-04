@@ -35,26 +35,46 @@ class MCIDataEntityRepository extends EntityRepository
         $mci1Id = $survey1->getId();
         $mci2Id = $survey2->getId();
 
-        $criteria1 = [
-            'surveyId' => $mci1Id,
-        ];
-        $criteria2 = [
-            'surveyId' => $mci2Id,
-        ];
-        if(!empty($options)){
-            $criteria1 = array_merge($criteria1, $options);
-            $criteria2 = array_merge($criteria2, $options);
+        $criteria1 = new \Doctrine\Common\Collections\Criteria();
+        $criteria2 = new \Doctrine\Common\Collections\Criteria();
+        //build the first criteria
+        $criteria1->where($criteria1->expr()->eq('surveyId', $mci1Id));
+        foreach($options as $opt){
+            if($opt[0] == '='){
+                $criteria1->andWhere($criteria1->expr()->eq($opt[1], $opt[2]));
+            }
+            if($opt[0] == '<'){
+                $criteria1->andWhere($criteria1->expr()->lt($opt[1], $opt[2]));
+            }
+            if($opt[0] == '>'){
+                $criteria1->andWhere($criteria1->expr()->gt($opt[1], $opt[2]));
+            }
         }
-        $mci1Data = $this->findBy($criteria1);
+
+        $criteria2->where($criteria2->expr()->eq('surveyId', $mci2Id));
+        foreach($options as $opt){
+            if($opt[0] == '='){
+                $criteria2->andWhere($criteria2->expr()->eq($opt[1], $opt[2]));
+            }
+            if($opt[0] == '<'){
+                $criteria2->andWhere($criteria2->expr()->lt($opt[1], $opt[2]));
+            }
+            if($opt[0] == '>'){
+                $criteria2->andWhere($criteria2->expr()->gt($opt[1], $opt[2]));
+            }
+        }
+        $mci1Data = $this->matching($criteria1);
 
         $matchedStudents = [];
         foreach($mci1Data as $stud1Survey){
             $studentId = $stud1Survey->getStudentId();
-            $criteria3 = array_merge($criteria2, ['studentId' => $studentId]);
-            $stud2Survey = $this->findBy($criteria3);
-            if($stud2Survey != null){
+            $criteria3 = clone($criteria2);
+            $criteria3->andWhere($criteria2->expr()->eq('studentId',  $studentId));
+            $mci2Data = $this->matching($criteria3);
+            if(!$mci2Data->isEmpty()){
                 $matchedStudents[$studentId]['pre'] = $stud1Survey;
-                $matchedStudents[$studentId]['post'] = $stud2Survey[0];
+                $stud2Survey = $mci2Data->first();
+                $matchedStudents[$studentId]['post'] = $stud2Survey;
             }
         }
         return $matchedStudents;
@@ -127,15 +147,36 @@ class MCIDataEntityRepository extends EntityRepository
     public function calculateItemLearningGains(SurveyEntity $survey1, SurveyEntity $survey2, $answers, $options=[]){
         $mci1Id = $survey1->getId();
         $mci2Id = $survey2->getId();
-        $criteria1 = ['surveyId' => $mci1Id];
-        $criteria2 = ['surveyId' => $mci2Id];
-        if(!empty($options)){
-            $criteria1 = array_merge($criteria1, $options);
-            $criteria2 = array_merge($criteria2, $options);
+        $criteria1 = new \Doctrine\Common\Collections\Criteria();
+        $criteria2 = new \Doctrine\Common\Collections\Criteria();
+        //build the first criteria
+        $criteria1->where($criteria1->expr()->eq('surveyId', $mci1Id));
+        foreach($options as $opt){
+            if($opt[0] == '='){
+                $criteria1->andWhere($criteria1->expr()->eq($opt[1], $opt[2]));
+            }
+            if($opt[0] == '<'){
+                $criteria1->andWhere($criteria1->expr()->lt($opt[1], $opt[2]));
+            }
+            if($opt[0] == '>'){
+                $criteria1->andWhere($criteria1->expr()->gt($opt[1], $opt[2]));
+            }
         }
-        //find all the survey responses
-        $mci1Data = $this->findBy($criteria1);
-        $mci2Data = $this->findBy($criteria2);
+
+        $criteria2->where($criteria2->expr()->eq('surveyId', $mci2Id));
+        foreach($options as $opt){
+            if($opt[0] == '='){
+                $criteria2->andWhere($criteria2->expr()->eq($opt[1], $opt[2]));
+            }
+            if($opt[0] == '<'){
+                $criteria2->andWhere($criteria2->expr()->lt($opt[1], $opt[2]));
+            }
+            if($opt[0] == '>'){
+                $criteria2->andWhere($criteria2->expr()->gt($opt[1], $opt[2]));
+            }
+        }
+        $mci1Data = $this->matching($criteria1);
+        $mci2Data = $this->matching($criteria2);
 
         //zero out the score keeping arrays
         $testResults1 = [];
