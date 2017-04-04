@@ -58,11 +58,7 @@ class Analysis extends AbstractType
                 'mapped' => false,
                 'required' => false
             ])
-            ->add('diff', CheckboxType::class, [
-                'label' => __('Calculate item difficulty for each item.'),
-                'mapped' => false,
-                'required' => false
-            ])
+
             ->add('pbc', CheckboxType::class, [
                 'label' => __('Calculate point biserial corellations for each item.'),
                 'mapped' => false,

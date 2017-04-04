@@ -29,7 +29,7 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
         <fieldset>
             <legend>{{ __('Item performance') }}</legend>
             <table class="table table-striped">
-                <tr><th>{{ __('Test Item Number') }}</th><th>{{ __('Pre Test Score') }}</th><th>{{ __('Post Test Score') }}</th><th>{{ __('Learning Gain') }}</th></tr>
+                <tr><th>{{ __('Test Item Number') }}</th><th>{{ __('Pre Test Score Item Difficulty') }}</th><th>{{ __('Post Test Score Item Difficulty') }}</th><th>{{ __('Learning Gain') }}</th></tr>
             {% for testItem in testItemResults %}
                 <tr><td>{{ loop.index }}</td><td>{{ testItem.pre }}</td><td>{{ testItem.post }}</td><td>{{ testItem.lg }}</td></tr>
                 {% endfor %}
@@ -40,8 +40,8 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
             <table class="table table-striped">
                 <tr><th class="col-md-6">{{ __('Fundamental Statement') }}</th>
                     <th class="col-md-1">{{ __('Question') }}</th>
-                    <th class="col-md-2">{{ __('Pre-Score') }}</th>
-                    <th class="col-md-2">{{ __('Post-Score') }}</th>
+                    <th class="col-md-2">{{ __('Pre-Score Item Difficulty') }}</th>
+                    <th class="col-md-2">{{ __('Post-Score Item Difficulty') }}</th>
                     <th class="col-md-2">{{ __('Learning Gain') }}</th></tr>
                 <tr><th colspan="5">{{ __('Evolution') }}</th></tr>
                 <tr><td>{{ __('1. Cells, organelles (e.g., mitochondria and chloroplasts), and all major metabolic pathways evolved from early prokaryotic cells. ') }}</td>

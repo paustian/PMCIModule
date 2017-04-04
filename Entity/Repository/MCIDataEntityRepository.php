@@ -20,6 +20,25 @@ class MCIDataEntityRepository extends EntityRepository
         $keyEntity = $this->findOneBy(['id' => 1, 'studentId' => 0, 'surveyId' => 0]);
         return $keyEntity->toArray();
     }
+
+    private function _createCriteria(SurveyEntity $survey, $options){
+        $surveyId = $survey->getId();
+        $criteria =  new \Doctrine\Common\Collections\Criteria();
+        $criteria->where($criteria->expr()->eq('surveyId', $surveyId));
+        foreach($options as $opt){
+            if($opt[0] == '='){
+                $criteria->andWhere($criteria->expr()->eq($opt[1], $opt[2]));
+            }
+            if($opt[0] == '<'){
+                $criteria->andWhere($criteria->expr()->lt($opt[1], $opt[2]));
+            }
+            if($opt[0] == '>'){
+                $criteria->andWhere($criteria->expr()->gt($opt[1], $opt[2]));
+            }
+        }
+        return $criteria;
+    }
+
     /**
      * Give two surveys, find all the students who took both and then put them in an array.
      * The array structure is:
@@ -32,37 +51,10 @@ class MCIDataEntityRepository extends EntityRepository
      * @return array
      */
     public function matchStudents(SurveyEntity $survey1, SurveyEntity $survey2, $options=[]){
-        $mci1Id = $survey1->getId();
-        $mci2Id = $survey2->getId();
+        //build the critieria
+        $criteria1 = $this->_createCriteria($survey1, $options);
+        $criteria2 = $this->_createCriteria($survey2, $options);
 
-        $criteria1 = new \Doctrine\Common\Collections\Criteria();
-        $criteria2 = new \Doctrine\Common\Collections\Criteria();
-        //build the first criteria
-        $criteria1->where($criteria1->expr()->eq('surveyId', $mci1Id));
-        foreach($options as $opt){
-            if($opt[0] == '='){
-                $criteria1->andWhere($criteria1->expr()->eq($opt[1], $opt[2]));
-            }
-            if($opt[0] == '<'){
-                $criteria1->andWhere($criteria1->expr()->lt($opt[1], $opt[2]));
-            }
-            if($opt[0] == '>'){
-                $criteria1->andWhere($criteria1->expr()->gt($opt[1], $opt[2]));
-            }
-        }
-
-        $criteria2->where($criteria2->expr()->eq('surveyId', $mci2Id));
-        foreach($options as $opt){
-            if($opt[0] == '='){
-                $criteria2->andWhere($criteria2->expr()->eq($opt[1], $opt[2]));
-            }
-            if($opt[0] == '<'){
-                $criteria2->andWhere($criteria2->expr()->lt($opt[1], $opt[2]));
-            }
-            if($opt[0] == '>'){
-                $criteria2->andWhere($criteria2->expr()->gt($opt[1], $opt[2]));
-            }
-        }
         $mci1Data = $this->matching($criteria1);
 
         $matchedStudents = [];
@@ -145,36 +137,10 @@ class MCIDataEntityRepository extends EntityRepository
     }
 
     public function calculateItemLearningGains(SurveyEntity $survey1, SurveyEntity $survey2, $answers, $options=[]){
-        $mci1Id = $survey1->getId();
-        $mci2Id = $survey2->getId();
-        $criteria1 = new \Doctrine\Common\Collections\Criteria();
-        $criteria2 = new \Doctrine\Common\Collections\Criteria();
-        //build the first criteria
-        $criteria1->where($criteria1->expr()->eq('surveyId', $mci1Id));
-        foreach($options as $opt){
-            if($opt[0] == '='){
-                $criteria1->andWhere($criteria1->expr()->eq($opt[1], $opt[2]));
-            }
-            if($opt[0] == '<'){
-                $criteria1->andWhere($criteria1->expr()->lt($opt[1], $opt[2]));
-            }
-            if($opt[0] == '>'){
-                $criteria1->andWhere($criteria1->expr()->gt($opt[1], $opt[2]));
-            }
-        }
+        //create criteria
+        $criteria1 = $this->_createCriteria($survey1, $options);
+        $criteria2 = $this->_createCriteria($survey2, $options);
 
-        $criteria2->where($criteria2->expr()->eq('surveyId', $mci2Id));
-        foreach($options as $opt){
-            if($opt[0] == '='){
-                $criteria2->andWhere($criteria2->expr()->eq($opt[1], $opt[2]));
-            }
-            if($opt[0] == '<'){
-                $criteria2->andWhere($criteria2->expr()->lt($opt[1], $opt[2]));
-            }
-            if($opt[0] == '>'){
-                $criteria2->andWhere($criteria2->expr()->gt($opt[1], $opt[2]));
-            }
-        }
         $mci1Data = $this->matching($criteria1);
         $mci2Data = $this->matching($criteria2);
 
@@ -278,4 +244,70 @@ class MCIDataEntityRepository extends EntityRepository
         }
         return $return;
     }
+
+    public function calculateItemDiscr($survey1, $survey2, $options){
+        $key = $this->getKey();
+        return true;
+    }
+
+    /**
+     * Given a survey with options for who to include, calculate the point biserial correlation for each test item.
+     *
+     * @param $survey
+     * @param $options
+     * @param $key
+     * @return array
+     */
+    public function calculatePbc($survey, $options, $key){
+        //create criteria
+        $criteria = $this->_createCriteria($survey, $options);
+        //grad the matching survey data
+        $mciData = $this->matching($criteria);
+        //get the key
+        $key = $this->getKey();
+        $scoreArray = [];
+        //grade the survey so that we can calculate the standard deviation
+        foreach($mciData as $student){
+            $scoreArray[] = $this->gradeStudent($student, $key);
+        }
+        //determine the standard deviation
+        $sd = stats_standard_deviation($scoreArray);
+        $numStudents = count($mciData);
+        $pbcArray = [];
+        //walk through each question and determine the pbc
+        for($i = 1; $i < 24; $i++){
+            $correctStud = [];
+            $incorrectStud = [];
+            $numCorrect = 0;
+            $numIncorrect = 0;
+            $q1 = 'getQ' . $i . 'Resp';
+            $q2 = 'q' . $i . 'Resp';
+            //sort into correct and incorrect arrays
+            foreach($mciData as $student){
+                if($student->$q1() == $key[$q2]){
+                    $correctStud[$student->getStudentId()] = $student;
+                    $numCorrect++;
+                } else {
+                    $incorrectStud[$student->getStudentId()] = $student;
+                    $numIncorrect++;
+                }
+            }
+            $M1 = $this->_calcMean($correctStud, $key);
+            $M0 = $this->_calcMean($incorrectStud, $key);
+            $p = $numCorrect/$numStudents;
+            $q = $numIncorrect/$numStudents;
+
+            $pbcArray[$i] = (($M1 - $M0)/$sd) * sqrt($p * $q);
+        }
+        return $pbcArray;
+    }
+
+    private function _calcMean($studArray, $key){
+        $scoreArray = [];
+        foreach($studArray as $student){
+            $scoreArray[] = $this->gradeStudent($student, $key);
+        }
+        return array_sum($scoreArray)/count($scoreArray);
+    }
+
 }

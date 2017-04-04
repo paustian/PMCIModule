@@ -84,9 +84,9 @@ class AnalysisController extends AbstractController {
             $lgstudents = $form->get('lgstudents')->getData();
             //These are all getting grabbed correctly. Uncomment them as you
             $lgtest = $form->get('lgtest')->getData();
-            //$itemDifficulty = $form->get('diff')->getData();
-            //$itemDiscrimination = $form->get('discrim')->getData();
-            //$pbc = $form->get('pbc')->getData();
+            $itemDiscrim = $form->get('discrim')->getData();
+            $pbc = $form->get('pbc')->getData();
+
             $options = [];
             $race = $form->get('race')->getData();
             if($race != 0){
@@ -128,12 +128,20 @@ class AnalysisController extends AbstractController {
                 //determine the learning gain for each item and then group them using Fundamental Statements from ASM
                 $testItemResults = $mciRepo->calculateItemLearningGains($survey1, $survey2, $key, $options);
             }
+            if($itemDiscrim){
+                $testItemDiscr = $mciRepo->calculateItemDiscr($survey1, $survey2, $options);
+            }
+            if($pbc){
+                $testItemPbc = $mciRepo->calculatePbc($survey1, $survey2, $options);
+            }
             $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_results.html.twig', [
                     'studentData' => $matchedStudents,
                     'lgstudents' => $lgstudents,
                     'lgavg'=> $avgLg,
                     'avgTestGrades' => $avgTestGrades,
                     'testItemResults' => $testItemResults,
+                    'testItemDiscr' =>$testItemDiscr,
+                    'testItemPbc' => $testItemPbc,
                 ]);
             //If the MCI data was uploaded, remove the MCI data and the survey data
             if($removeSurvey1){
