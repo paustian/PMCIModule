@@ -133,10 +133,10 @@ class MCIDataEntityRepository extends EntityRepository
         }
         //calculate the proportion that got each question right
         foreach ($mci1Data as $student) {
-            $this->gradeItem($student, $answers, $testResults1);
+            $this->gradeItems($student, $answers, $testResults1);
         }
         foreach ($mci2Data as $student) {
-            $this->gradeItem($student, $answers, $testResults2);
+            $this->gradeItems($student, $answers, $testResults2);
         }
         //normalize score to the number of students. This is the
         //proportion correct. Also calculate the learning gain.
@@ -160,7 +160,7 @@ class MCIDataEntityRepository extends EntityRepository
      * @param $answer
      * @return float|int
      */
-    public function gradeItem(MCIDataEntity $survey, $answers, &$testResults)
+    public function gradeItems(MCIDataEntity $survey, $answers, &$testResults)
     {
         for ($i = 1; $i < 24; $i++) {
             $q1 = 'getQ' . $i . 'Resp';
@@ -169,6 +169,7 @@ class MCIDataEntityRepository extends EntityRepository
                 $testResults[$i]++;
             }
         }
+        return count($testResults)/count($answers);
     }
 
     /**
@@ -250,11 +251,6 @@ class MCIDataEntityRepository extends EntityRepository
         return $return;
     }
 
-    public function calculateItemDiscr($survey1, $survey2, $options)
-    {
-        $key = $this->getKey();
-        return true;
-    }
 
     public function getKey()
     {
@@ -340,7 +336,7 @@ class MCIDataEntityRepository extends EntityRepository
         return (float) sqrt($fVariance);
     }
 
-    public function calcItemDiscrimination($survey, $options){
+    public function calcItemDiscrim($survey, $options){
         //create criteria
         $criteria = $this->_createCriteria($survey, $options);
         //grad the matching survey data
@@ -350,23 +346,46 @@ class MCIDataEntityRepository extends EntityRepository
         $scoreArray = [];
         //grade the survey so that we can calculate the standard deviation
         foreach ($mciData as $student) {
-            $scoreArray[] = ['score' => $this->gradeItem($student, $key), 'student' => $student];
+            $results = [];
+            //grade each student and record it in the array
+            $score = $this->gradeItems($student, $key, $results);
+            $scoreArray[] = ['score' => $score, 'student' => $student];
         }
         //The score array now has all our score. Sort it.
-        usort($scoreArray, $this->_sortFunc);
-        $cutOff27 = 0.27 * count($scoreArray);
-
-        $topStudents = array_slice($scoreArray, $cutOff27);
-        $bottomStudents = array_slice($scoreArray, -$cutOff27);
-
-
+        usort($scoreArray, array($this, '_sortFunc'));
+        $cutOff27 = intval(0.27 * count($scoreArray));
+        //Get the top and bottom students
+        $topStudents = array_slice($scoreArray, 0, $cutOff27);
+        $bottomStudents = array_slice($scoreArray, -$cutOff27, $cutOff27);
+        //now walk each tiem and determine the discrimination, which is defined as
+        //($topright - $botRight)/$cutOff27 http://ericae.net/ft/tamu/Espy.htm
+        $itemDisc= [];
+        for($i = 1; $i < 24; $i++){
+            $top = $this->_numberCorrect($topStudents, $i, $key);
+            $bottom = $this->_numberCorrect($bottomStudents, $i, $key);
+            $itemDisc[$i] = ($top- $bottom)/$cutOff27;
+        }
+        return $itemDisc;
     }
 
+    //the sort function. Note this sorts them in ascending order value.
     private function _sortFunc($a, $b){
         if($a['score'] == $b['score']){
             return 0;
         }
-        return ($a['score'] < $b['score']) ? -1 : 1;
+        return ($a['score'] < $b['score']) ? 1 : -1;
+    }
+
+    private function _numberCorrect($students, $i, $key){
+        $q1 = 'getQ' . $i . 'Resp';
+        $q2 = 'q' . $i . 'Resp';
+        $correct = 0;
+        foreach($students as $student){
+            if($student['student']->$q1() == $key[$q2]){
+                $correct++;
+            }
+        }
+        return $correct;
     }
 
 }

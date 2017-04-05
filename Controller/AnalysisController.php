@@ -128,7 +128,8 @@ class AnalysisController extends AbstractController {
                 $testItemResults = $mciRepo->calculateItemLearningGains($survey1, $survey2, $key, $options);
             }
             if($itemDiscrim){
-                $testItemDiscr = $mciRepo->calculateItemDiscr($survey1, $survey2, $options);
+                $preTestItemDisc = $mciRepo->calcItemDiscrim($survey1, $options);
+                $postTestItemDisc = $mciRepo->calcItemDiscrim($survey2, $options);
             }
             if($pbc){
                 $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
@@ -144,6 +145,8 @@ class AnalysisController extends AbstractController {
                     'pbc' => $pbc,
                     'preTestItemPbc' => $preTestItemPbc,
                     'postTestItemPbc' => $postTestItemPbc,
+                    'preTestItemDisc' => $preTestItemDisc,
+                    'postTestItemDisc' => $postTestItemDisc,
                 ]);
             //If the MCI data was uploaded, remove the MCI data and the survey data
             if($removeSurvey1){
