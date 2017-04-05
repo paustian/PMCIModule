@@ -82,7 +82,6 @@ class AnalysisController extends AbstractController {
                 $survey2 = $this->_createSurvey($csv2, $person, new \DateTime());
             }
             $lgstudents = $form->get('lgstudents')->getData();
-            //These are all getting grabbed correctly. Uncomment them as you
             $lgtest = $form->get('lgtest')->getData();
             $itemDiscrim = $form->get('discrim')->getData();
             $pbc = $form->get('pbc')->getData();
@@ -132,7 +131,8 @@ class AnalysisController extends AbstractController {
                 $testItemDiscr = $mciRepo->calculateItemDiscr($survey1, $survey2, $options);
             }
             if($pbc){
-                $testItemPbc = $mciRepo->calculatePbc($survey1, $survey2, $options);
+                $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
+                $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
             }
             $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_results.html.twig', [
                     'studentData' => $matchedStudents,
@@ -141,7 +141,9 @@ class AnalysisController extends AbstractController {
                     'avgTestGrades' => $avgTestGrades,
                     'testItemResults' => $testItemResults,
                     'testItemDiscr' =>$testItemDiscr,
-                    'testItemPbc' => $testItemPbc,
+                    'pbc' => $pbc,
+                    'preTestItemPbc' => $preTestItemPbc,
+                    'postTestItemPbc' => $postTestItemPbc,
                 ]);
             //If the MCI data was uploaded, remove the MCI data and the survey data
             if($removeSurvey1){

@@ -29,9 +29,30 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
         <fieldset>
             <legend>{{ __('Item performance') }}</legend>
             <table class="table table-striped">
-                <tr><th>{{ __('Test Item Number') }}</th><th>{{ __('Pre Test Score Item Difficulty') }}</th><th>{{ __('Post Test Score Item Difficulty') }}</th><th>{{ __('Learning Gain') }}</th></tr>
+                <tr>
+                    <th>{{ __('Test Item Number') }}</th>
+                    <th>{{ __('Pre Test Item Difficulty') }}</th>
+                    {%  if pbc %}
+                    <th>{{ __('Pre Test pbc') }}</th>
+                    {% endif %}
+                    <th>{{ __('Post Test Item Difficulty') }}</th>
+                    {%  if pbc %}
+                    <th>{{ __('Pre Test pbc') }}</th>
+                    {% endif %}
+                    <th>{{ __('Learning Gain') }}</th>
+                </tr>
             {% for testItem in testItemResults %}
-                <tr><td>{{ loop.index }}</td><td>{{ testItem.pre }}</td><td>{{ testItem.post }}</td><td>{{ testItem.lg }}</td></tr>
+                <tr>
+                    <td>{{ loop.index }}</td>
+                    <td>{{ testItem.pre }}</td>
+                    {%  if pbc %}
+                    <td>{{ preTestItemPbc[loop.index] }}</td>
+                    {% endif %}
+                    <td>{{ testItem.post }}</td>
+                    {%  if pbc %}
+                    <td>{{ postTestItemPbc[loop.index] }}</td>
+                    {% endif %}
+                    <td>{{ testItem.lg }}</td></tr>
                 {% endfor %}
             </table>
         </fieldset>
