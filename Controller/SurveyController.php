@@ -50,9 +50,16 @@ class SurveyController extends AbstractController {
      * The format is a csv file that contains the questions as downloaded from the a qualtrics survey
      */
     public function indexAction(Request $request) {
-// Security check
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
+    // Security check
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
+            throw new AccessDeniedException(__('You do not have permission to access the surveys. Please request a copy of the MCI and register.'));
         }
         $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
         return $response ;
@@ -70,7 +77,14 @@ class SurveyController extends AbstractController {
      */
     public function editAction(Request $request, SurveyEntity $survey=null)
     {
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
             throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
         }
         if($survey == null){
@@ -104,7 +118,14 @@ class SurveyController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function uploadAction(Request $request) {
-       if (!$this->hasPermission($this->name . '::', '::', ACCESS_OVERVIEW)) {
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
             throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
         }
         //Find the person
@@ -197,6 +218,12 @@ class SurveyController extends AbstractController {
      */
     public function modifyAction(Request $request) {
         $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
         $uid = $currentUserApi->get('uid');
         $em = $this->getDoctrine()->getManager();
         $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);

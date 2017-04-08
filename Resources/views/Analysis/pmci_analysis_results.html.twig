@@ -6,7 +6,7 @@
             {{ __("Results of MCI Analysis") }}
         </h3>
         {{ showflashes() }}
-        {% if lgstudents %}
+        {% if match %}
         <fieldset>
             <legend>{{ __('Student Performance') }}</legend>
             <table class="table table-striped">
@@ -35,9 +35,15 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
                     {%  if pbc %}
                     <th>{{ __('Pre Test pbc') }}</th>
                     {% endif %}
+                    {%  if itemD %}
+                        <th>{{ __('Pre Test Item Discrimination') }}</th>
+                    {% endif %}
                     <th>{{ __('Post Test Item Difficulty') }}</th>
                     {%  if pbc %}
                     <th>{{ __('Pre Test pbc') }}</th>
+                    {% endif %}
+                    {%  if itemD %}
+                        <th>{{ __('Post Test Item Discrimination') }}</th>
                     {% endif %}
                     <th>{{ __('Learning Gain') }}</th>
                 </tr>
@@ -48,9 +54,15 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
                     {%  if pbc %}
                     <td>{{ preTestItemPbc[loop.index] }}</td>
                     {% endif %}
+                    {%  if itemD %}
+                        <td>{{ preTestItemDisc[loop.index] }}</td>
+                    {% endif %}
                     <td>{{ testItem.post }}</td>
                     {%  if pbc %}
                     <td>{{ postTestItemPbc[loop.index] }}</td>
+                    {% endif %}
+                    {%  if itemD %}
+                        <td>{{ postTestItemDisc[loop.index] }}</td>
                     {% endif %}
                     <td>{{ testItem.lg }}</td></tr>
                 {% endfor %}

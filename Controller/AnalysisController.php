@@ -30,10 +30,19 @@ class AnalysisController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function indexAction(Request $request) {
+        $currentUserApi = $this->get('zikula_users_module.current_user');
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+
         //security check
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
             throw new AccessDeniedException(__('You do not have pemission to access the analysis interface.'));
         }
+
 
         $form = $this->createForm(new \Paustian\PMCIModule\Form\Analysis());
 
@@ -136,6 +145,7 @@ class AnalysisController extends AbstractController {
                 $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
             }
             $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_results.html.twig', [
+                    'match' => $match,
                     'studentData' => $matchedStudents,
                     'lgstudents' => $lgstudents,
                     'lgavg'=> $avgLg,
@@ -145,6 +155,7 @@ class AnalysisController extends AbstractController {
                     'pbc' => $pbc,
                     'preTestItemPbc' => $preTestItemPbc,
                     'postTestItemPbc' => $postTestItemPbc,
+                    'itemD'=> $itemDiscrim,
                     'preTestItemDisc' => $preTestItemDisc,
                     'postTestItemDisc' => $postTestItemDisc,
                 ]);

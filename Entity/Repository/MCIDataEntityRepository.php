@@ -363,7 +363,7 @@ class MCIDataEntityRepository extends EntityRepository
         for($i = 1; $i < 24; $i++){
             $top = $this->_numberCorrect($topStudents, $i, $key);
             $bottom = $this->_numberCorrect($bottomStudents, $i, $key);
-            $itemDisc[$i] = ($top- $bottom)/$cutOff27;
+            $itemDisc[$i] = round(($top- $bottom)/$cutOff27, 4);
         }
         return $itemDisc;
     }

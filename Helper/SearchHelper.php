@@ -44,7 +44,7 @@ class SearchHelper extends AbstractSearchable
         foreach ($results as $article) {
             $url = new RouteUrl('paustianpmcimodule_user_displayarticle', ['article' => $article->getAid()]);
             //make sure we have permission for this object.
-            if (!SecurityUtil::checkPermission('Book::', $article['bid'] . "::" . $article['cid'], ACCESS_OVERVIEW)) {
+            if (!SecurityUtil::checkPermission('Book::', $article['bid'] . "::" . $article['cid'], ACCESS_COMMENT)) {
                 continue;
             }
             $returnArray[] = array(
