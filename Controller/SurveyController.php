@@ -167,8 +167,14 @@ class SurveyController extends AbstractController {
                 //The data needs to be flushed to get the survey ID. Once we have this, we can then
                 $em->flush();
                 $surveyID = $survey->getId();
+                $itemCounter = 0;
                foreach($csv as $studentData){
-                    $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
+                   $itemCounter++;
+                   if($studentData === false){
+                       $this->addFlash('error', $this->__("Item $itemCounter had an error and could not be saved." ));
+                       continue;
+                   }
+                   $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
                     $mciData->setSurveyId($surveyID);
                     $mciData->setRespDate($surveyDate);
                     $em->persist($mciData);
