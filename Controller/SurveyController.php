@@ -58,8 +58,9 @@ class SurveyController extends AbstractController {
             $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
-            throw new AccessDeniedException(__('You do not have permission to access the surveys. Please request a copy of the MCI and register.'));
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
         $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
         return $response ;
@@ -84,8 +85,9 @@ class SurveyController extends AbstractController {
             $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         if($survey == null){
             return $this->redirect($this->generateUrl('paustianpmcimodule_survey_modify'));
@@ -125,8 +127,9 @@ class SurveyController extends AbstractController {
             $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the surveys. Please request a copy of the MCI and register.'));
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            $this->addFlash('error', $this->__('You do not have pemission to upload a survey. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         //Find the person
         $em = $this->getDoctrine()->getManager();
@@ -196,7 +199,8 @@ class SurveyController extends AbstractController {
      */
     public function deleteAction(Request $request, SurveyEntity $survey) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_DELETE)) {
-            throw new AccessDeniedException(__('You do not have pemission to delete the surveys. Please request a copy of the MCI and register.'));
+            $this->addFlash('error', $this->__('You do not have pemission to delete the surveys. Please request a copy of the MCI and register.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         //we need to delete all the responses from this survey also
         //To conserve memory and do this quickly we write it in dql
@@ -227,8 +231,8 @@ class SurveyController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
-            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+            $this->addFlash('error', $this->__('You are not authorized to modify any users. Please log in first and then you can modify your information'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         $uid = $currentUserApi->get('uid');
         $em = $this->getDoctrine()->getManager();

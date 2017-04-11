@@ -55,7 +55,7 @@ class PersonController extends AbstractController {
         $uid = $currentUserApi->get('uid');
 
         if (null === $person) {
-            if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
                 throw new AccessDeniedException($this->__("You do not have permission to edit the persons in the MCI."));
             }
             $person = new PersonEntity();
@@ -65,8 +65,9 @@ class PersonController extends AbstractController {
         } else {
             //to edit a person, you either need to be that user or be an admin
             $userID = $person->getUserId();
-            if ( ($uid != $userID) && (!$this->hasPermission($this->name . '::', $person->getId() . '::', ACCESS_ADD))) {
-                throw new AccessDeniedException($this->__("You do not have permission to edit this person's information."));
+            if ( ($uid != $userID) && (!$this->hasPermission($this->name . '::', $person->getId() . '::', ACCESS_ADMIN))) {
+                $this->addFlash('error',"You do not have permission to edit this person's information.");
+                return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
             }
             $doMerge = true;
         }
@@ -122,11 +123,11 @@ class PersonController extends AbstractController {
     public function deleteAction(Request $request, PersonEntity $person) {
         $response = $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         if (null == $person) {
-            //you want the edit interface, which has a delete option.
             return $response;
         }
         if (!$this->hasPermission($this->name . '::', $person->getId() . "::", ACCESS_DELETE)) {
-            throw new AccessDeniedException($this->__("You do not have permission to delete a person."));
+            $this->addFlash('error',"You do not have permission to delete a person.");
+            return $response;
         }
 
         $em = $this->getDoctrine()->getManager();
@@ -144,9 +145,6 @@ class PersonController extends AbstractController {
      * @return Response
      */
     public function modifyAction(Request $request) {
-        if (!$this->hasPermission($this->name . '::', "::", ACCESS_EDIT)) {
-            throw new AccessDeniedException($this->__("You do not have permission to edit a person."));
-        }
         $em = $this->getDoctrine()->getManager();
         $people = $em->getRepository("Paustian\PMCIModule\Entity\PersonEntity")->findAll();
         return $this->render('PaustianPMCIModule:Person:pmci_person_modifyperson.html.twig', ['people' => $people]);

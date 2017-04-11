@@ -68,7 +68,7 @@ class AnalysisController extends AbstractController {
                 $csv1 = $this->_getSurveyData($file1);
                 if($csv1 == null){
                     $this->addFlash('error', "Your pre csv file is not in the correct format, please re-read the documentation below. If you are using excel, make sure you save in csv format, not UTF-8 csv format: $csv1");
-                    return $this->redirect($this->generateUrl('paustianpmcimodule_survey_upload'));
+                    return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
                 }
                 $removeSurvey1 = true;
                 //create new survey. We will delete it at the end of this function
@@ -79,12 +79,12 @@ class AnalysisController extends AbstractController {
                 $file2 = $form['file2']->getData();
                 if($file2 == null){
                     $this->addFlash('error', "You need to either choose a survey from the menu or upload a file in the correct format.");
-                    return $this->redirect($this->generateUrl('paustianpmcimodule_index'));
+                    return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
                 }
                 $csv2 = $this->_getSurveyData($file2);
                 if(!is_array($csv2)){
                     $this->addFlash('error', "Your post csv file is not in the correct format, please re-read the documentation below. If you are using excel, make sure you save in csv format, not UTF-8 csv format: $csv2");
-                    return $this->redirect($this->generateUrl('paustianpmcimodule_survey_upload'));
+                    return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
                 }
                 $removeSurvey2 = true;
                 //create new survey. We will delete it at the end of this function
@@ -128,7 +128,7 @@ class AnalysisController extends AbstractController {
                     $avgLg = $mciRepo->calcStudentLearningGains($matchedStudents);
                     if($avgLg === false){
                         $this->addFlash('error', $this->__('Something is wrong in how you set up to calculate learning gains.'));
-                        return $this->redirect($this->generateUrl('paustianpmcimodule_pmci'));
+                        return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
                     }
                 }
             }

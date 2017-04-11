@@ -1,4 +1,6 @@
+{% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
 {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
+{% endif %}
 <div class="container-fluid">
     {{ showflashes() }}
     <h3>{{ __('Edit a Person') }}</h3>
