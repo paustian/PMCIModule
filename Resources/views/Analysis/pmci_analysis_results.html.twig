@@ -12,7 +12,7 @@
             <table class="table table-striped">
                 <tr><th>{{ __('Student ID') }}</th><th>{{ __('Pre Test Score') }}</th><th>{{ __('Post Test Score') }}</th><th>{{ __('Learning Gain') }}</th></tr>
                 {% for studentID, student in studentData %}
-                <tr><td>{{ studentID }}</td><td>{{ student.preScore }}</td><td>{{ student.postScore }}</td><td>{{ student.lg }}</td></tr>
+                <tr><td>{{ loop.index }}</td><td>{{ student.preScore }}</td><td>{{ student.postScore }}</td><td>{{ student.lg }}</td></tr>
                 {% endfor %}
                 <tr><td>{{ __('Averages') }}</td><td>{{ avgTestGrades.preAvg }}</td><td>{{ avgTestGrades.postAvg }}</td><td>{{ lgavg }}</td></tr>
 
@@ -22,7 +22,7 @@
         <textarea cols="100", rows="20">
 Student ID,Pre Test Score,Post Test Score,Learning Gain
             {% for studentID, student in studentData %}
-{{ studentID }},{{ student.preScore }},{{ student.postScore }},{{ student.lg }}
+{{ loop.index }},{{ student.preScore }},{{ student.postScore }},{{ student.lg }}
             {% endfor %}
         </textarea>
         {% endif %}

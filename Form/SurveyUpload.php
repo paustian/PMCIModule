@@ -23,7 +23,10 @@ class SurveyUpload extends AbstractType
     {
         $builder
             ->add('file', FileType::class, array('label' => __('Upload File'), 'required' => true, 'mapped' => false))
-            ->add('savedata', CheckboxType::class, array('label' => __('Save the data into the database'), 'mapped' => false))
+            ->add('savedata', CheckboxType::class, array(
+                        'label' => __('Yes I understand this will upload my data and make it available for use.'),
+                        'mapped' => false,
+                        'attr' => ['style' => 'width:200px']))
             ->add('prepost', ChoiceType::class, array(
                             'label' => __('Pre-instruction or Post-instruction'),
                             'choices' => array('0' => 'Pre-instruction',
