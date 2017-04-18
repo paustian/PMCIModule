@@ -236,7 +236,12 @@ class SurveyController extends AbstractController {
         }
         $uid = $currentUserApi->get('uid');
         $em = $this->getDoctrine()->getManager();
-        $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);
+        $surveys = null;
+        if($this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)){
+            $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findAll();
+        }else {
+            $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);
+        }
 
         $response = $this->render('PaustianPMCIModule:Survey:survey_modify.html.twig', ['surveys' => $surveys]);
         return $response;

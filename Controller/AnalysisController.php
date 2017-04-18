@@ -39,8 +39,9 @@ class AnalysisController extends AbstractController {
         }
 
         //security check
-        if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the analysis interface.'));
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
+            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
 

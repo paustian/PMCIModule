@@ -15,7 +15,13 @@ class SurveyEntityRepository extends EntityRepository
      * @return array
      */
     public function parseCsv($file){
-        $csv = array_map('str_getcsv', file($file->getPathname()));
+        $fileStr = file($file->getPathname());
+       //if using the old MacOS delimiter, it fails. However we can rescue
+        //it by using explode
+        if(count($fileStr) < 2){
+           $fileStr = explode("\r", $fileStr[0]);
+       }
+        $csv = array_map('str_getcsv', $fileStr);
         array_walk($csv, function(&$a) use ($csv) {
             $a = array_combine($csv[0], $a);
         });
