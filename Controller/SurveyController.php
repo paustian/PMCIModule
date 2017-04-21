@@ -159,6 +159,7 @@ class SurveyController extends AbstractController {
                     $this->addFlash('error', "Your csv file is not in the correct format, please re-read the documentation below. If you are using excel, make sure you save in csv format, not UTF-8 csv format: $error");
                     return $this->redirect($this->generateUrl('paustianpmcimodule_survey_upload'));
                 }
+
                 //Ok we have valid data so enter the survey data first
                 $surveyDate = $form['surveyDate']->getData();
                 $prePost = $form['prepost']->getData();

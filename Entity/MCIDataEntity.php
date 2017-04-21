@@ -24,8 +24,9 @@ class MCIDataEntity extends EntityAccess
 
     /**
      * studentId field (record studentId)
+     * this is stored as an md5 hash, so it has to be a string
      *
-     * @ORM\Column(type="bigint", length=20)
+     * @ORM\Column(type="string", length=15)
      */
     private $studentId;
 
