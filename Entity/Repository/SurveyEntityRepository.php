@@ -26,13 +26,10 @@ class SurveyEntityRepository extends EntityRepository
             $a = array_combine($csv[0], $a);
         });
         array_shift($csv); # remove column header
-
-        //now hash the student IDs so that they are unique and unrecognizable.
-        //This is a security measure to make sure that no private info gets out.
-        //md5 is good enough for this work, since these are not really passwords
-       foreach($csv as $key => $studentData){
-           $studentData['StudentID'] = hexdec( substr(sha1($studentData['StudentID']), 0, 15) );
-           $csv[$key] = $studentData;
+        //This little loop removes the students IDs present and calculates a hash of them.
+        foreach($csv as $key => $studentData){
+            $studentData['StudentID'] = hexdec( substr(sha1($studentData['StudentID']), 0, 19) );
+            $csv[$key] = $studentData;
         }
         return $csv;
     }
