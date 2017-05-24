@@ -28,7 +28,8 @@ class SurveyEntityRepository extends EntityRepository
         array_shift($csv); # remove column header
         //This little loop removes the students IDs present and calculates a hash of them.
         foreach($csv as $key => $studentData){
-            $studentData['StudentID'] = hexdec( substr(sha1($studentData['StudentID']), 0, 19) );
+            $studentID = (int)$studentData['StudentID'];
+            $studentData['StudentID'] = hexdec( substr(sha1($studentID), 0, 10) );
             $csv[$key] = $studentData;
         }
         return $csv;
