@@ -1,6 +1,6 @@
 {
   "name": "paustian/pmcimodule",
-  "version": "1.0.0",
+  "version": "2.0.0",
   "description": "A module for obtaining and analyzing data from the Micrbiology Concept Inventory",
   "type": "zikula-module",
   "license": "LGPL-3.0+",

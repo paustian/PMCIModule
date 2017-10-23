@@ -73,7 +73,7 @@ class PersonController extends AbstractController {
         }
 
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new Person(), $person);
+        $form = $this->createForm( Person::class, $person);
 
         $form->handleRequest($request);
 

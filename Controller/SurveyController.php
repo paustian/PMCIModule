@@ -95,7 +95,7 @@ class SurveyController extends AbstractController {
         //Find the person
         $currentUserApi = $this->get('zikula_users_module.current_user');
         $uid = $currentUserApi->get('uid');
-        $form = $this->createForm(new Survey(), $survey);
+        $form = $this->createForm(Survey::class, $survey);
 
         $form->handleRequest($request);
 
@@ -143,7 +143,7 @@ class SurveyController extends AbstractController {
         $survey->setInstitution($person->getInstitution());
         $survey->setCourse($person->getCourse());
         //Set up some default values for the survey. These can be edited if they need to.
-        $form = $this->createForm(new SurveyUpload(), $survey);
+        $form = $this->createForm(SurveyUpload::class, $survey);
 
         $form->handleRequest($request);
 
