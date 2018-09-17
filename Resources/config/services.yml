@@ -1,6 +1,13 @@
 services:
-    paustian_pmci_module.container.link_container:
-        class: Paustian\PMCIModule\Container\LinkContainer
-        arguments: ["@translator.default", "@jms_i18n_routing.router", "@zikula_permissions_module.api.permission"]
-        tags:
-            - { name: zikula.link_container }
+  paustian_pmci_module.container.link_container:
+    class: Paustian\PMCIModule\Container\LinkContainer
+    arguments: ["@translator.default", "@jms_i18n_routing.router", "@zikula_permissions_module.api.permission"]
+    tags:
+    - { name: zikula.link_container }
+
+    paustian_pmci_module.form.person:
+      class: Paustian\PMCIModule\Form\Person
+      arguments:
+      - "@translator.default"
+      tags:
+      - { name: form.type }

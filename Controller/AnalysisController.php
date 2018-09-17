@@ -45,7 +45,7 @@ class AnalysisController extends AbstractController {
         }
 
 
-        $form = $this->createForm(new \Paustian\PMCIModule\Form\Analysis());
+        $form = $this->createForm(\Paustian\PMCIModule\Form\Analysis::class);
 
         $form->handleRequest($request);
         $em = $this->getDoctrine()->getManager();

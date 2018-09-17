@@ -6,6 +6,7 @@ use Symfony\Component\Form\FormBuilderInterface;
 use Symfony\Component\OptionsResolver\OptionsResolverInterface;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
+use Zikula\Common\Translator\TranslatorInterface;
 
 /**
  * Description of ExamForm
@@ -15,13 +16,25 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
  * 
  */
 class Person extends AbstractType {
+
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    public function __construct(
+        TranslatorInterface $translator
+    ) {
+        $this->translator = $translator;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name', TextType::class, array('label' => __('Name'), 'required' => true))
-            ->add('email', EmailType::class, array('label' => __('Email'), 'required' => true))
-            ->add('institution', TextType::class, array('label' => __('Institution'), 'required' => true))
-            ->add('course', TextType::class, array('label' => __('Course'), 'required' => true))
+            ->add('name', TextType::class, array('label' => $this->translator->__('Name'), 'required' => true))
+            ->add('email', EmailType::class, array('label' => $this->translator->__('Email'), 'required' => true))
+            ->add('institution', TextType::class, array('label' => $this->translator->__('Institution'), 'required' => true))
+            ->add('course', TextType::class, array('label' => $this->translator->__('Course'), 'required' => true))
             ->add('add', 'submit', array('label' => 'Submit'));
         
     }

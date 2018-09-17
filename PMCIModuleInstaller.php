@@ -25,8 +25,6 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
      * module instance
      */
     public function install() {
-        // create tables
-        $this->entityManager = $this->container->get('doctrine.entitymanager');
         //Create the tables of the module. Book has 5
         try {
             $this->schemaTool->create($this->entities);
