@@ -120,6 +120,9 @@ class AnalysisController extends AbstractController {
             $em = $this->getDoctrine()->getManager();
             //grab the key from the database. This is the first entry.
             $key = $mciRepo->getKey();
+            $matchedStudents = [];
+            $avgTestGrades = [];
+            $avgLg = 0;
             if($match){
                 $matchedStudents = $mciRepo->matchStudents($survey1, $survey2, $options);
                 $avgTestGrades = $mciRepo->gradeMatchedStudents($matchedStudents, $key);
@@ -131,14 +134,19 @@ class AnalysisController extends AbstractController {
                     }
                 }
             }
+            $testItemResults = [];
             if($lgtest){
                 //determine the learning gain for each item and then group them using Fundamental Statements from ASM
                 $testItemResults = $mciRepo->calculateItemLearningGains($survey1, $survey2, $key, $options);
             }
+            $preTestItemDisc = [];
+            $postTestItemDisc = [];
             if($itemDiscrim){
                 $preTestItemDisc = $mciRepo->calcItemDiscrim($survey1, $options);
                 $postTestItemDisc = $mciRepo->calcItemDiscrim($survey2, $options);
             }
+            $preTestItemPbc = [];
+            $postTestItemPbc = [];
             if($pbc){
                 $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
                 $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
