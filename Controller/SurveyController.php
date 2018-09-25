@@ -172,16 +172,14 @@ class SurveyController extends AbstractController {
                 $em->flush();
                 $surveyID = $survey->getId();
                 $itemCounter = 0;
-               foreach($csv as $studentData){
-                   $itemCounter++;
-                   if($studentData === false){
-                       $this->addFlash('error', $this->__("Item $itemCounter had an error and could not be saved." ));
-                       continue;
-                   }
-                   $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
-                    $mciData->setSurveyId($surveyID);
-                    $mciData->setRespDate($surveyDate);
-                    $em->persist($mciData);
+                foreach($csv as $studentData){
+                    $itemCounter++;
+                    if($this->_validateStudentDataRow($studentData, $itemCounter)){
+                        $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
+                        $mciData->setSurveyId($surveyID);
+                        $mciData->setRespDate($surveyDate);
+                        $em->persist($mciData);
+                    }
                 }
                 $em->flush();
                 $this->addFlash('status', $this->__('Your survey data has been saved'));
@@ -189,6 +187,20 @@ class SurveyController extends AbstractController {
         }
         $response = $this->render('PaustianPMCIModule:Survey:survey_upload.html.twig', array('form' => $form->createView(),));
         return $response ;
+    }
+
+    private function _validateStudentDataRow($studentData, $itemCounter){
+        if($studentData === false){
+            $this->addFlash('error', $this->__("Row $itemCounter did not parse correctly. Make sure you hve it formatted correctly." ));
+            return false;
+        }
+        //This checks to make sure they are all numbers, except for Major, that is text.
+        //This will also flag any empty values, as those will come back as strings.
+        if( (count($studentData) - 1) != count(array_filter($studentData, 'is_numeric')) ){
+            $this->addFlash('error', $this->__("Item $itemCounter was missing values. Make sure all columns have values and that they are integers, except for the Major Column." ));
+            return false;
+        }
+        return true;
     }
 
     /**

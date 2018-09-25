@@ -88,7 +88,7 @@ class PersonController extends AbstractController {
             $siteName = $variableApi->getSystemVar('sitename');
             $message->setFrom([$formData['email'] => $formData['name']]);
             $message->setTo([$adminMail => $siteName]);
-            $msgBody = $formData['name'] . $this->__('of') . $formData['institution'] .  $this->__('has requested a copy of the MCI. Please email it to the address:' . $formData['email']);
+            $msgBody = $formData['name'] . $this->__(' of ') . $formData['institution'] .  $this->__(' has requested a copy of the MCI. Please email it to the address:\n' . $formData['email']);
 
             $result = $mailer->sendMessage($message, 'A request for the MCI', $msgBody);
             if(!$result) {
