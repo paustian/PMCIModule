@@ -2,21 +2,20 @@
 
 namespace Paustian\PMCIModule;
 
-use Paustian\PMCIModule\Entity\MCIDataEntity;
-use vakata\database\Exception;
-use Zikula\Core\AbstractBundle;
-use Zikula\Core\AbstractExtensionInstaller;
-use Symfony\Component\DependencyInjection\ContainerInterface;
 
+use Zikula\Core\AbstractExtensionInstaller;
+use Paustian\PMCIModule\Entity\PersonEntity;
+use Paustian\PMCIModule\Entity\SurveyEntity;
+use Paustian\PMCIModule\Entity\MCIDataEntity;
 
 class PMCIModuleInstaller extends AbstractExtensionInstaller {
 
  
     
     private $entities = array(
-            'Paustian\PMCIModule\Entity\PersonEntity',
-            'Paustian\PMCIModule\Entity\SurveyEntity',
-            'Paustian\PMCIModule\Entity\MCIDataEntity'
+            PersonEntity::class,
+            SurveyEntity::class,
+            MCIDataEntity::class
         );
 
     /**
@@ -25,9 +24,7 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
      * module instance
      */
     public function install() {
-        // create tables
-        $this->entityManager = $this->container->get('doctrine.entitymanager');
-        //Create the tables of the module. Book has 5
+        //Create the tables of the module.
         try {
             $this->schemaTool->create($this->entities);
         } catch (Exception $e) {

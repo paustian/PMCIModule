@@ -10,11 +10,9 @@ namespace Paustian\PMCIModule\Controller;
 
 use Paustian\PMCIModule\Entity\PersonEntity;
 use Paustian\PMCIModule\Entity\SurveyEntity;
-use Paustian\PMCIModule\PaustianPMCIModule;
+use Paustian\PMCIModule\Form\Analysis;
 use Zikula\Core\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
 use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
 
@@ -45,7 +43,7 @@ class AnalysisController extends AbstractController {
         }
 
 
-        $form = $this->createForm(new \Paustian\PMCIModule\Form\Analysis());
+        $form = $this->createForm(Analysis::class);
 
         $form->handleRequest($request);
         $em = $this->getDoctrine()->getManager();
@@ -122,6 +120,9 @@ class AnalysisController extends AbstractController {
             $em = $this->getDoctrine()->getManager();
             //grab the key from the database. This is the first entry.
             $key = $mciRepo->getKey();
+            $matchedStudents = [];
+            $avgTestGrades = [];
+            $avgLg = 0;
             if($match){
                 $matchedStudents = $mciRepo->matchStudents($survey1, $survey2, $options);
                 $avgTestGrades = $mciRepo->gradeMatchedStudents($matchedStudents, $key);
@@ -133,14 +134,19 @@ class AnalysisController extends AbstractController {
                     }
                 }
             }
+            $testItemResults = [];
             if($lgtest){
                 //determine the learning gain for each item and then group them using Fundamental Statements from ASM
                 $testItemResults = $mciRepo->calculateItemLearningGains($survey1, $survey2, $key, $options);
             }
+            $preTestItemDisc = [];
+            $postTestItemDisc = [];
             if($itemDiscrim){
                 $preTestItemDisc = $mciRepo->calcItemDiscrim($survey1, $options);
                 $postTestItemDisc = $mciRepo->calcItemDiscrim($survey2, $options);
             }
+            $preTestItemPbc = [];
+            $postTestItemPbc = [];
             if($pbc){
                 $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
                 $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
@@ -152,7 +158,6 @@ class AnalysisController extends AbstractController {
                     'lgavg'=> $avgLg,
                     'avgTestGrades' => $avgTestGrades,
                     'testItemResults' => $testItemResults,
-                    'testItemDiscr' =>$testItemDiscr,
                     'pbc' => $pbc,
                     'preTestItemPbc' => $preTestItemPbc,
                     'postTestItemPbc' => $postTestItemPbc,
@@ -174,7 +179,7 @@ class AnalysisController extends AbstractController {
             $em->flush();
             return $response;
         }
-        //@todo Add menus to limit by age, gpa. Use a number box, with limits and a > = < sign. This can then be made into an option
+
         // Return a page of menu items.
         $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_index.html.twig', [
                 'form' => $form->createView(),]);

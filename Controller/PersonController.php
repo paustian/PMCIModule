@@ -73,7 +73,7 @@ class PersonController extends AbstractController {
         }
 
         //I need to add the use declaration for this class. 
-        $form = $this->createForm(new Person(), $person);
+        $form = $this->createForm( Person::class, $person);
 
         $form->handleRequest($request);
 
@@ -88,13 +88,13 @@ class PersonController extends AbstractController {
             $siteName = $variableApi->getSystemVar('sitename');
             $message->setFrom([$formData['email'] => $formData['name']]);
             $message->setTo([$adminMail => $siteName]);
-            $msgBody = $formData['name'] . __('of') . $formData['institution'] .  __('has requested a copy of the MCI. Please email it to the address:' . $formData['email']);
+            $msgBody = $formData['name'] . $this->__(' of ') . $formData['institution'] .  $this->__(' has requested a copy of the MCI. Please email it to the address:\n' . $formData['email']);
 
             $result = $mailer->sendMessage($message, 'A request for the MCI', $msgBody);
             if(!$result) {
-                $this->addFlash('status', 'Your messaged failed, please check your email address and name.');
+                $this->addFlash('status', $this->__('Your messaged failed, please check your email address and name.'));
             } else {
-                $this->addFlash('status', 'Thank you for submitting your request. It will be authorized within 1 business day.');
+                $this->addFlash('status', $this->__('Thank you for submitting your request. It will be authorized within 1 business day.'));
                 //now save the data back to the
                 $em = $this->getDoctrine()->getManager();
                 if ($doMerge) {
@@ -133,7 +133,7 @@ class PersonController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         $em->remove($person);
         $em->flush();
-        $this->addFlash('status', __('Person Deleted.'));
+        $this->addFlash('status', $this->__('Person Deleted.'));
         return $response;
     }
 

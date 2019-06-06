@@ -347,6 +347,9 @@ class MCIDataEntityRepository extends EntityRepository
         //grade the survey so that we can calculate the standard deviation
         foreach ($mciData as $student) {
             $results = [];
+            for ($i = 1; $i < 24; $i++) {
+                $results[$i] = 0;
+            }
             //grade each student and record it in the array
             $score = $this->gradeItems($student, $key, $results);
             $scoreArray[] = ['score' => $score, 'student' => $student];

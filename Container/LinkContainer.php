@@ -56,11 +56,12 @@ class LinkContainer implements LinkContainerInterface
      */
     public function getLinks($type = LinkContainerInterface::TYPE_ADMIN)
     {
-        $method = 'get' . ucfirst(strtolower($type));
-        if (method_exists($this, $method)) {
-            return $this->$method();
+        if (LinkContainerInterface::TYPE_ADMIN == $type) {
+            return $this->getAdmin();
         }
-
+        if (LinkContainerInterface::TYPE_USER == $type) {
+            return $this->getUser();
+        }
         return [];
     }
 
@@ -96,6 +97,29 @@ class LinkContainer implements LinkContainerInterface
         return $links;
     }
 
+    private function getUser()
+    {
+        $links = array();
+
+        $submenuLinks = [];
+        $submenuLinks[] = [
+            'url' => $this->router->generate('paustianpmcimodule_person_edit'),
+            'text' => $this->translator->__('Register to recieve the MCI')];
+        $submenuLinks[] = [
+            'url' => $this->router->generate('paustianpmcimodule_survey_upload'),
+            'text' => $this->translator->__('Submit your MCI results')];
+        $submenuLinks[] = [
+            'url' => $this->router->generate('paustianpmcimodule_analysis_index'),
+            'text' => $this->translator->__('Analyze MCI results')];
+
+        $links[] = [
+            'url' => $this->router->generate('paustianpmcimodule_person_edit'),
+            'text' => $this->translator->__('User Requests'), //$this->translator->__('Get the MCI'),
+            'icon' => 'pencil',
+            'links' => $submenuLinks];
+
+        return $links;
+    }
     /**
      * set the BundleName as required by the interface
      *

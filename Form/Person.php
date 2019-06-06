@@ -2,8 +2,10 @@
 namespace Paustian\PMCIModule\Form;
 
 use Symfony\Component\Form\AbstractType;
+use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Symfony\Component\OptionsResolver\OptionsResolverInterface;
+use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Component\OptionsResolver\OptionsResolver;
 use Symfony\Component\Form\Extension\Core\Type\TextType;
 use Symfony\Component\Form\Extension\Core\Type\EmailType;
 
@@ -15,14 +17,28 @@ use Symfony\Component\Form\Extension\Core\Type\EmailType;
  * 
  */
 class Person extends AbstractType {
+    /**
+     * @var TranslatorInterface
+     */
+    private $translator;
+
+    /**
+     * BlockType constructor.
+     * @param TranslatorInterface $translator
+     */
+    public function __construct(
+        TranslatorInterface $translator)   {
+        $this->translator = $translator;
+    }
+
     public function buildForm(FormBuilderInterface $builder, array $options)
     {
         $builder
-            ->add('name', TextType::class, array('label' => __('Name'), 'required' => true))
-            ->add('email', EmailType::class, array('label' => __('Email'), 'required' => true))
-            ->add('institution', TextType::class, array('label' => __('Institution'), 'required' => true))
-            ->add('course', TextType::class, array('label' => __('Course'), 'required' => true))
-            ->add('add', 'submit', array('label' => 'Submit'));
+            ->add('name', TextType::class, array('label' => $this->translator->__('Name'), 'required' => true))
+            ->add('email', EmailType::class, array('label' => $this->translator->__('Email'), 'required' => true))
+            ->add('institution', TextType::class, array('label' => $this->translator->__('Institution'), 'required' => true))
+            ->add('course', TextType::class, array('label' => $this->translator->__('Course'), 'required' => true))
+            ->add('add', SubmitType::class, array('label' => $this->translator->__('Submit')));
         
     }
 
@@ -37,7 +53,7 @@ class Person extends AbstractType {
      *
      * @param OptionsResolverInterface $resolver
      */
-    public function setDefaultOptions(OptionsResolverInterface $resolver)
+    public function setDefaultOptions(OptionsResolver $resolver)
     {
         $resolver->setDefaults(array(
             'data_class' => 'Paustian\PMCIModule\Entity\PersonEntity',
