@@ -17,6 +17,7 @@ use Zikula\Common\Translator\TranslatorInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
+use Zikula\UsersModule\Api\CurrentUserApi;
 
 class Analysis extends AbstractType
 {
@@ -25,13 +26,17 @@ class Analysis extends AbstractType
      */
     private $translator;
 
+    private $currentUserApi;
+
     /**
      * BlockType constructor.
      * @param TranslatorInterface $translator
      */
     public function __construct(
-        TranslatorInterface $translator)   {
+        TranslatorInterface $translator,
+        CurrentUserApi $currentUserApi)   {
         $this->translator = $translator;
+        $this->currentUserApi = $currentUserApi;
     }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
@@ -41,6 +46,7 @@ class Analysis extends AbstractType
                 'label'      => $this->translator->__('First Survey'),
                 'choice_label'   => false,
                 'class'    => 'PaustianPMCIModule:SurveyEntity',
+                'choices' => $options['data']['choiceOptions'],
                 'choice_label' => function ($survey) {
                     return $survey->getDisplayName();
                 },
@@ -52,6 +58,7 @@ class Analysis extends AbstractType
                 'label'      => $this->translator->__('Second Survey'),
                 'multiple'   => false,
                 'class'    => 'PaustianPMCIModule:SurveyEntity',
+                'choices' => $options['data']['choiceOptions'],
                 'choice_label' => function ($survey) {
                     return $survey->getDisplayName();
                 },

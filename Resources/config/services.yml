@@ -12,6 +12,7 @@ services:
     class: Paustian\PMCIModule\Form\Analysis
     arguments:
       - "@translator.default"
+      - "@zikula_users_module.current_user"
     tags:
       - { name: form.type }
 

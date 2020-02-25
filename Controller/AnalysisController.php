@@ -42,12 +42,21 @@ class AnalysisController extends AbstractController {
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
-
-        $form = $this->createForm(Analysis::class);
-
-        $form->handleRequest($request);
         $em = $this->getDoctrine()->getManager();
         $currentUserApi = $this->get('zikula_users_module.current_user');
+        $qb = $em->createQueryBuilder('u');
+        $qb->select('u')
+            ->from('Paustian\PMCIModule\Entity\SurveyEntity', 'u');
+        //restrict access to only your surveys unless you have admin access to this module
+        $qb->where($qb->expr()->eq('u.userId', ":uid"))
+                ->setParameter("uid", $currentUserApi->get('uid'));
+        $query = $qb->getQuery();
+        $results = $query->getResult();
+
+        $form = $this->createForm(Analysis::class, ['choiceOptions' => $results]);
+
+        $form->handleRequest($request);
+
         $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
         $mciRepo = $em->getRepository('Paustian\PMCIModule\Entity\MCIDataEntity');
         $removeSurvey1 = $removeSurvey2 = false;
