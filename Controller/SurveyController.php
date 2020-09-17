@@ -27,13 +27,14 @@
 namespace Paustian\PMCIModule\Controller;
 
 
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Form\Survey;
 use Paustian\PMCIModule\Form\SurveyUpload;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
 
 /**
  * @Route("/survey")
@@ -55,14 +56,14 @@ class SurveyController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
-            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            $this->addFlash('error', $this->trans('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
-        $response = $this->render('PaustianPMCIModule:Survey:survey_index.html.twig');
+        $response = $this->render('@PaustianPMCIModule/Survey/survey_index.html.twig');
         return $response ;
     }
 
@@ -82,11 +83,11 @@ class SurveyController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI.'));
+            $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
-            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            $this->addFlash('error', $this->trans('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         if($survey == null){
@@ -99,15 +100,15 @@ class SurveyController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if($form->isSubmitted() && $form->isValid()) {
             $survey->setUserId($uid);
             $em = $this->getDoctrine()->getManager();
             $em->merge($survey);
             //The data needs to be flushed to get the survey ID. Once we have this, we can then
             $em->flush();
-            $this->addFlash('status', $this->__('Your survey data has been saved'));
+            $this->addFlash('status', $this->trans('Your survey data has been saved'));
         }
-        $response = $this->render('PaustianPMCIModule:Survey:survey_edit.html.twig', array('form' => $form->createView(),));
+        $response = $this->render('@PaustianPMCIModule/Survey/survey_edit.html.twig', array('form' => $form->createView(),));
         return $response;
     }
     /**
@@ -124,11 +125,11 @@ class SurveyController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
-            $this->addFlash('error', $this->__('You do not have pemission to upload a survey. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            $this->addFlash('error', $this->trans('You do not have pemission to upload a survey. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         //Find the person
@@ -136,7 +137,7 @@ class SurveyController extends AbstractController {
         $currentUserApi = $this->get('zikula_users_module.current_user');
         $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
         if($person == null){
-            $this->addFlash('error', $this->__('You have to register first before you can upload surveys'));
+            $this->addFlash('error', $this->trans('You have to register first before you can upload surveys'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
         $survey = new SurveyEntity();
@@ -147,7 +148,7 @@ class SurveyController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if($form->isSubmitted() && $form->isValid()) {
             //Grab the contents of the file.
             $file = $form['file']->getData();
             $extension = $file->guessExtension();
@@ -182,22 +183,22 @@ class SurveyController extends AbstractController {
                     }
                 }
                 $em->flush();
-                $this->addFlash('status', $this->__('Your survey data has been saved'));
+                $this->addFlash('status', $this->trans('Your survey data has been saved'));
             }
         }
-        $response = $this->render('PaustianPMCIModule:Survey:survey_upload.html.twig', array('form' => $form->createView(),));
+        $response = $this->render('@PaustianPMCIModule/Survey/survey_upload.html.twig', array('form' => $form->createView(),));
         return $response ;
     }
 
     private function _validateStudentDataRow($studentData, $itemCounter){
         if($studentData === false){
-            $this->addFlash('error', $this->__("Row $itemCounter did not parse correctly. Make sure you hve it formatted correctly." ));
+            $this->addFlash('error', $this->trans("Row $itemCounter did not parse correctly. Make sure you hve it formatted correctly." ));
             return false;
         }
         //This checks to make sure they are all numbers, except for Major, that is text.
         //This will also flag any empty values, as those will come back as strings.
         if( (count($studentData) - 1) != count(array_filter($studentData, 'is_numeric')) ){
-            $this->addFlash('error', $this->__("Item $itemCounter was missing values. Make sure all columns have values and that they are integers, except for the Major Column." ));
+            $this->addFlash('error', $this->trans("Item $itemCounter was missing values. Make sure all columns have values and that they are integers, except for the Major Column." ));
             return false;
         }
         return true;
@@ -212,7 +213,7 @@ class SurveyController extends AbstractController {
      */
     public function deleteAction(Request $request, SurveyEntity $survey) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_DELETE)) {
-            $this->addFlash('error', $this->__('You do not have pemission to delete the surveys. Please request a copy of the MCI and register.'));
+            $this->addFlash('error', $this->trans('You do not have pemission to delete the surveys. Please request a copy of the MCI and register.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         //we need to delete all the responses from this survey also
@@ -244,7 +245,7 @@ class SurveyController extends AbstractController {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You are not authorized to modify any users. Please log in first and then you can modify your information'));
+            $this->addFlash('error', $this->trans('You are not authorized to modify any users. Please log in first and then you can modify your information'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
         $uid = $currentUserApi->get('uid');
@@ -256,7 +257,7 @@ class SurveyController extends AbstractController {
             $surveys = $em->getRepository("Paustian\PMCIModule\Entity\SurveyEntity")->findBy(['userId' => $uid]);
         }
 
-        $response = $this->render('PaustianPMCIModule:Survey:survey_modify.html.twig', ['surveys' => $surveys]);
+        $response = $this->render('@PaustianPMCIModule/Survey/survey_modify.html.twig', ['surveys' => $surveys]);
         return $response;
     }
 }

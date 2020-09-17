@@ -8,13 +8,20 @@
 namespace Paustian\PMCIModule\Controller;
 
 use Paustian\PMCIModule\Entity\PersonEntity;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Routing\RouterInterface;
 use Paustian\PMCIModule\Form\Person;
-use Swift_Message;
+use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Symfony\Component\Mailer\Exception\TransportExceptionInterface;
+use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Address;
+use Symfony\Component\Mime\Email;
+use Zikula\UsersModule\Api\CurrentUserApi;
+
 /**
  * @Route("/person")
  */
@@ -34,29 +41,33 @@ class PersonController extends AbstractController {
     }
 
     /**
-     * 
+     *
      * @Route("/edit/{person}")
      * Edit or Delete a person using the MCI. This allows changes to a person
-     * @param $request
-     * @param $person
+     * @param Request $request
+     * @param MailerInterface $mailer
+     * @param VariableApiInterface $variableApi
+     * @param CurrentUserApi $currentUserApi
+     * @param PersonEntity|null $person
      * @return Response The rendered output of the modifyconfig template.
-     *
-     * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
-    public function editAction(Request $request, PersonEntity $person = null) {
+    public function editAction(Request $request,
+                               MailerInterface $mailer,
+                               VariableApiInterface $variableApi,
+                               CurrentUserApi $currentUserApi,
+                               PersonEntity $person = null) {
         $doMerge = false;
-        $currentUserApi = $this->get('zikula_users_module.current_user');
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI.'));
+            $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
         $uid = $currentUserApi->get('uid');
 
         if (null === $person) {
             if (!$this->hasPermission($this->name . '::', '::', ACCESS_COMMENT)) {
-                throw new AccessDeniedException($this->__("You do not have permission to edit the persons in the MCI."));
+                throw new AccessDeniedException($this->trans("You do not have permission to edit the persons in the MCI."));
             }
             $person = new PersonEntity();
             $person->setUserId($uid);
@@ -77,37 +88,34 @@ class PersonController extends AbstractController {
 
         $form->handleRequest($request);
 
-        if ($form->isValid()) {
+        if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
 
             //Now notify the admin that someone wants the MCI
-            $message = Swift_Message::newInstance();
-            $variableApi = $this->get('zikula_extensions_module.api.variable');
-            $mailer = $this->get('zikula_mailer_module.api.mailer');
+
             $adminMail = $variableApi->getSystemVar('adminmail');
             $siteName = $variableApi->getSystemVar('sitename');
-            $message->setFrom([$formData['email'] => $formData['name']]);
-            $message->setTo([$adminMail => $siteName]);
-            $msgBody = $formData['name'] . $this->__(' of ') . $formData['institution'] .  $this->__(' has requested a copy of the MCI. Please email it to the address:\n' . $formData['email']);
-
-            $result = $mailer->sendMessage($message, 'A request for the MCI', $msgBody);
-            if(!$result) {
-                $this->addFlash('status', $this->__('Your messaged failed, please check your email address and name.'));
-            } else {
-                $this->addFlash('status', $this->__('Thank you for submitting your request. It will be authorized within 1 business day.'));
-                //now save the data back to the
+            $msgBody = $formData['name'] . $this->trans(' of ') . $formData['institution'] .  $this->trans(' has requested a copy of the MCI. Please email it to the address:\n' . $formData['email']);
+            try {
+                $message = (new Email())
+                    ->from(new Address($formData['email'], $formData['name']))
+                    ->to(new Address($adminMail, $siteName))
+                    ->subject($this->trans('A reqeust for the MCI'))
+                    ->html($msgBody);
+                $mailer->send($message);
+                $this->addFlash('status', $this->trans('Thank you for submitting your request. It will be authorized within 1 business day.'));
                 $em = $this->getDoctrine()->getManager();
-                if ($doMerge) {
-                    $em->merge($person);
-                } else {
+                if (!$doMerge) {
                     $em->persist($person);
                 }
                 $em->flush();
+            } catch (TransportExceptionInterface $exception){
+                $this->addFlash('status', $this->trans('Your messaged failed, please check your email address and name.'));
             }
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
-        return $this->render('PaustianPMCIModule:Person:pmci_person_edit.html.twig', [
+        return $this->render('@PaustianPMCIModule/Person/pmci_person_edit.html.twig', [
                     'form' => $form->createView(),]
         );
     }
@@ -133,7 +141,7 @@ class PersonController extends AbstractController {
         $em = $this->getDoctrine()->getManager();
         $em->remove($person);
         $em->flush();
-        $this->addFlash('status', $this->__('Person Deleted.'));
+        $this->addFlash('status', $this->trans('Person Deleted.'));
         return $response;
     }
 
@@ -147,6 +155,6 @@ class PersonController extends AbstractController {
     public function modifyAction(Request $request) {
         $em = $this->getDoctrine()->getManager();
         $people = $em->getRepository("Paustian\PMCIModule\Entity\PersonEntity")->findAll();
-        return $this->render('PaustianPMCIModule:Person:pmci_person_modifyperson.html.twig', ['people' => $people]);
+        return $this->render('PaustianPMCIModule/Person/pmci_person_modifyperson.html.twig', ['people' => $people]);
     }
 }

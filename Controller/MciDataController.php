@@ -1,21 +1,14 @@
 <?php
-/**
- * Created by PhpStorm.
- * User: paustian
- * Date: 3/17/17
- * Time: 4:33 PM
- */
 
 namespace Paustian\PMCIModule\Controller;
 
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\HttpFoundation\RedirectResponse;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\PMCIModule\Entity\MCIDataEntity;
+use Symfony\Component\Finder\Exception\AccessDeniedException;
 
 /**
  * @Route("/mcidata")
@@ -34,10 +27,10 @@ class MciDataController  extends AbstractController {
     public function indexAction(Request $request) {
         //security check
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
-            throw new AccessDeniedException(__('You do not have pemission to access the Book admin interface.'));
+            throw new AccessDeniedException($this->trans('You do not have pemission to access the Book admin interface.'));
         }
         // Return a page of menu items.
-        $response = new Response($this->render('PaustianPMCIModule:Response:pmci_response_index.html.twig'));
+        $response = new Response($this->render('@PaustianPMCIModule/Response/pmci_response_index.html.twig'));
         return $response;
     }
 
@@ -54,7 +47,7 @@ class MciDataController  extends AbstractController {
     public function editAction(Request $request, MCIDataEntity $mciData = null) {
         $doMerge = false;
 
-        return $this->render('PaustianPMCIModule:Response:pmci_response_index.html.twig');
+        return $this->render('@PaustianPMCIModule/Response/pmci_response_index.html.twig');
     }
 
     /**
@@ -65,7 +58,7 @@ class MciDataController  extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function deleteAction(Request $request, MCIDataEntity $mciData) {
-        return $this->render('PaustianPMCIModule:Response:pmci_response_index.html.twig');
+        return $this->render('@PaustianPMCIModule/Response/pmci_response_index.html.twig');
     }
 
 
@@ -76,6 +69,6 @@ class MciDataController  extends AbstractController {
      * @return Response
      */
     public function modifyAction(Request $request) {
-        return $this->render('PaustianPMCIModule:Response:pmci_response_index.html.twig');
+        return $this->render('@PaustianPMCIModule/Response/pmci_response_index.html.twig');
     }
 }

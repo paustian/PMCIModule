@@ -1,29 +1,22 @@
-{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
-    {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-{% endif %}
-{{ moduleLinks() }}
-<div class="container-fluid">
-    <div class="row">
-        <h3>
-            <span class="fa fa-edit"></span>
-            {{ __("Edit your survey information") }}
-        </h3>
-        {{ showflashes() }}
+{% form_theme form '@ZikulaFormExtension/Form/bootstrap_4_zikula_admin_layout.html.twig' %}
+
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Edit your survey information"|trans }}
+</h3>
+{{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
-        <fieldset>
-            <legend>{{ __('Edit MCI Survey Information') }}</legend>
-            {{ form_row(form.prepost) }}
-            {{ form_row(form.surveyDate) }}
-            {{ form_row(form.institution) }}
-            {{ form_row(form.course) }}
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
-            </div>
-        </div>
-        {{ form_end(form) }}
+<fieldset>
+    <legend>{{ "Edit MCI Survey Information"|trans }}</legend>
+    {{ form_row(form.prepost) }}
+    {{ form_row(form.surveyDate) }}
+    {{ form_row(form.institution) }}
+    {{ form_row(form.course) }}
+</fieldset>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
     </div>
 </div>
+{{ form_end(form) }}

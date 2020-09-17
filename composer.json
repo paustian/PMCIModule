@@ -1,6 +1,6 @@
 {
   "name": "paustian/pmcimodule",
-  "version": "2.0.0",
+  "version": "3.0.0",
   "description": "A module for obtaining and analyzing data from the Micrbiology Concept Inventory",
   "type": "zikula-module",
   "license": "LGPL-3.0+",
@@ -16,12 +16,14 @@
     }
   },
   "require": {
-    "php": ">5.4.0"
+    "php": ">7.2.5",
+    "zikula/core-bundle": "3.*"
   },
   "extra": {
     "zikula": {
+      "icon":"fas fa-graduation-cap",
       "class": "Paustian\\PMCIModule\\PaustianPMCIModule",
-      "core-compatibility": ">=1.4.1",
+      "core-compatibility": ">=3.0.0",
       "displayname": "Microbial Concept Inventory",
       "url": "pmci",
       "capabilities": {

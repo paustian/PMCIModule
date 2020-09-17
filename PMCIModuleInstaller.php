@@ -2,8 +2,7 @@
 
 namespace Paustian\PMCIModule;
 
-
-use Zikula\Core\AbstractExtensionInstaller;
+use Zikula\ExtensionsModule\Installer\AbstractExtensionInstaller;
 use Paustian\PMCIModule\Entity\PersonEntity;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Entity\MCIDataEntity;
@@ -23,11 +22,11 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
      * This function is only ever called once during the lifetime of a particular
      * module instance
      */
-    public function install() {
+    public function install() :bool {
         //Create the tables of the module.
         try {
             $this->schemaTool->create($this->entities);
-        } catch (Exception $e) {
+        } catch (\Exception $e) {
             return false;
         }
         $this->_defaultData();
@@ -39,7 +38,7 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
      * upgrade the pmci module from an old version
      * This function can be called multiple times
      */
-    public function upgrade($oldversion) {
+    public function upgrade($oldversion) : bool {
         //There are no old versions, nothing to upgrade
         // Update successful
         return true;
@@ -50,12 +49,12 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
      * This function is only ever called once during the lifetime of a particular
      * module instance
      */
-    public function uninstall() {
+    public function uninstall() : bool {
 
         //drop the tables
         try {
             $this->schemaTool->drop($this->entities);
-        } catch(Exception $e){
+        } catch(\Exception $e){
             $this->addFlash('error', $e->getMessage());
             return false;
         }
@@ -66,7 +65,7 @@ class PMCIModuleInstaller extends AbstractExtensionInstaller {
     /**
      * put the key in as the first piece of data. This can be called upon to grade  items.
      */
-    private function _defaultData(){
+    private function _defaultData() : void {
         //
         $key = [
             'StudentID' => 0,

@@ -13,7 +13,7 @@ use Symfony\Bridge\Doctrine\Form\Type\EntityType;
 use Symfony\Component\Form\AbstractType;
 use Symfony\Component\Form\Extension\Core\Type\SubmitType;
 use Symfony\Component\Form\FormBuilderInterface;
-use Zikula\Common\Translator\TranslatorInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Symfony\Component\Form\Extension\Core\Type\CheckboxType;
 use Symfony\Component\Form\Extension\Core\Type\FileType;
 use Symfony\Component\Form\Extension\Core\Type\ChoiceType;
@@ -43,8 +43,7 @@ class Analysis extends AbstractType
     {
         $builder
             ->add('survey1', EntityType::class, [
-                'label'      => $this->translator->__('First Survey'),
-                'choice_label'   => false,
+                'label'      => 'First Survey',
                 'class'    => 'PaustianPMCIModule:SurveyEntity',
                 'choices' => $options['data']['choiceOptions'],
                 'choice_label' => function ($survey) {
@@ -53,9 +52,9 @@ class Analysis extends AbstractType
                 'mapped'     => false,
                 'required' => false,
             ])
-            ->add('file1', FileType::class, array('label' => $this->translator->__('Upload Pre-Survey'), 'required' => false, 'mapped' => false))
+            ->add('file1', FileType::class, array('label' => 'Upload Pre-Survey', 'required' => false, 'mapped' => false))
             ->add('survey2', 'Symfony\Bridge\Doctrine\Form\Type\EntityType', [
-                'label'      => $this->translator->__('Second Survey'),
+                'label'      => 'Second Survey',
                 'multiple'   => false,
                 'class'    => 'PaustianPMCIModule:SurveyEntity',
                 'choices' => $options['data']['choiceOptions'],
@@ -65,40 +64,40 @@ class Analysis extends AbstractType
                 'mapped'     => false,
                 'required' => false,
             ])
-            ->add('file2', FileType::class, array('label' => $this->translator->__('Upload Post-Survey'), 'required' => false, 'mapped' => false))
+            ->add('file2', FileType::class, array('label' => 'Upload Post-Survey', 'required' => false, 'mapped' => false))
             ->add('match', CheckboxType::class, [
-                    'label' => $this->translator->__('Only analyze students present in each survey.'),
+                    'label' => 'Only analyze students present in each survey.',
                     'mapped' => false,
                     'required' => false
             ])
             ->add('lgstudents', CheckboxType::class, [
-                'label' => $this->translator->__('Calculate learning gains for students.'),
+                'label' => 'Calculate learning gains for students.',
                 'mapped' => false,
                 'required' => false
             ])
             ->add('lgtest', CheckboxType::class, [
-                'label' => $this->translator->__('Calculate learning gains between tests.'),
+                'label' => 'Calculate learning gains between tests.',
                 'mapped' => false,
                 'required' => false
             ])
 
             ->add('pbc', CheckboxType::class, [
-                'label' => $this->translator->__('Calculate point biserial corellations for each item.'),
+                'label' => 'Calculate point biserial corellations for each item.',
                 'mapped' => false,
                 'required' => false
             ])
             ->add('discrim', CheckboxType::class, [
-                'label' => $this->translator->__('Calculate item discrimination for each test item.'),
+                'label' => 'Calculate item discrimination for each test item.',
                 'mapped' => false,
                 'required' => false
             ])
             ->add('sex', ChoiceType::class, [
-                'label' => $this->translator->__('Sex'),
+                'label' => 'Sex',
                 'choices' => ['All' => '0',
                     'Male' => '1',
                     'Female' => '2',],])
             ->add('race', ChoiceType::class, [
-                'label' => $this->translator->__('Ethinicity'),
+                'label' => 'Ethinicity',
                 'choices' => ['All' => '0',
                     'American Indian/Alaskan Native' => '1',
                     'Black or African American' => '2',
@@ -106,18 +105,18 @@ class Analysis extends AbstractType
                     'Hispanic/Latino' => '4',
                     'White' => '5',],])
             ->add('esl', ChoiceType::class, [
-                'label' => $this->translator->__('English as a Second Language'),
+                'label' => 'English as a Second Language',
                 'choices' => ['No' => '0',
                     'Yes' => '1',],])
 
             ->add('ageOpt', ChoiceType::class, [
-                'label' => $this->translator->__('Pick an age operator'),
+                'label' => 'Pick an age operator',
                 'choices' => ['=' => '0',
                     '>' => '1',
                     '<' => '2',],
                 'required' => false,])
             ->add('age', ChoiceType::class, [
-                    'label' => $this->translator->__('Pick an age'),
+                    'label' => 'Pick an age',
                     'required' => false,
                     'choices' => ['All' => '0',
                         '18-20' => '1',
@@ -132,8 +131,7 @@ class Analysis extends AbstractType
                     ])
 
             ->add('gpa', ChoiceType::class, [
-                'label' => $this->translator->__('Pick a gpa'),
-                'required' => false,
+                'label' => 'Pick a gpa',
                 'choices' => ['> 3.5'=> '1',
                             '3.0-3.49' => '2',
                             '2.5-3.0' => '3',
