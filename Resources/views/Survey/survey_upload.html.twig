@@ -1,4 +1,15 @@
 {% form_theme form '@ZikulaFormExtension/Form/bootstrap_4_zikula_admin_layout.html.twig' %}
+{{ pageAddAsset('javascript', 'https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js') }}
+{% set formScript %}
+    <script type="text/javascript">
+        (function($) {
+            $(document).ready(function() {
+                bsCustomFileInput.init()
+            });
+        })(jQuery);
+    </script>
+{% endset %}
+{{ pageAddAsset('footer', formScript) }}
 
 {{ moduleHeader('user', '', '', false, true, false, true) }}
 <h3>
