@@ -30,20 +30,38 @@ namespace Paustian\PMCIModule\Controller;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Form\Survey;
 use Paustian\PMCIModule\Form\SurveyUpload;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
+use Zikula\ExtensionsModule\AbstractExtension;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
+use Zikula\UsersModule\Api\ApiInterface\CurrentUserApiInterface;
+use Symfony\Contracts\Translation\TranslatorInterface;
 
 /**
  * @Route("/survey")
  */
 class SurveyController extends AbstractController {
 
+    private $currentUserApi;
+
+    public function __construct(
+        AbstractExtension $extension,
+        PermissionApiInterface $permissionApi,
+        VariableApiInterface $variableApi,
+        TranslatorInterface $translator,
+        CurrentUserApiInterface $currentUserApi
+    ){
+        $this->currentUserApi = $currentUserApi;
+        parent::__construct($extension, $permissionApi, $variableApi, $translator);
+    }
     /**
      * @Route("")
-     * 
+     *
      * @param $request
      * @return $response
      *
@@ -52,10 +70,9 @@ class SurveyController extends AbstractController {
      */
     public function indexAction(Request $request) {
     // Security check
-        $currentUserApi = $this->get('zikula_users_module.current_user');
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
-        if(!$currentUserApi->isLoggedIn()) {
+        if(!$this->currentUserApi->isLoggedIn()) {
             $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
@@ -63,13 +80,14 @@ class SurveyController extends AbstractController {
             $this->addFlash('error', $this->trans('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
-        $response = $this->render('@PaustianPMCIModule/Survey/survey_index.html.twig');
+        $response = $this->redirect($this->generateUrl('paustianpmcimodule_survey_modify'));
         return $response ;
     }
 
     /**
      *
      * @Route("/edit/{survey}")
+     *
      * Edit or Delete a survey from MCI. This also deletes all mci data attached to the survey.
      * @param $request
      * @param $survey
@@ -79,10 +97,9 @@ class SurveyController extends AbstractController {
      */
     public function editAction(Request $request, SurveyEntity $survey=null)
     {
-        $currentUserApi = $this->get('zikula_users_module.current_user');
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
-        if(!$currentUserApi->isLoggedIn()) {
+        if(!$this->currentUserApi->isLoggedIn()) {
             $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
@@ -94,8 +111,7 @@ class SurveyController extends AbstractController {
             return $this->redirect($this->generateUrl('paustianpmcimodule_survey_modify'));
         }
         //Find the person
-        $currentUserApi = $this->get('zikula_users_module.current_user');
-        $uid = $currentUserApi->get('uid');
+        $uid = $this->currentUserApi->get('uid');
         $form = $this->createForm(Survey::class, $survey);
 
         $form->handleRequest($request);
@@ -113,6 +129,7 @@ class SurveyController extends AbstractController {
     }
     /**
      * Upload MCI survey data to the database.
+     *
      * @Route("/upload/")
      * Upload survey data for the MCI.
      * @param $request
@@ -121,10 +138,9 @@ class SurveyController extends AbstractController {
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
     public function uploadAction(Request $request) {
-        $currentUserApi = $this->get('zikula_users_module.current_user');
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
-        if(!$currentUserApi->isLoggedIn()) {
+        if(!$this->currentUserApi->isLoggedIn()) {
             $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
@@ -134,8 +150,7 @@ class SurveyController extends AbstractController {
         }
         //Find the person
         $em = $this->getDoctrine()->getManager();
-        $currentUserApi = $this->get('zikula_users_module.current_user');
-        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
+        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($this->currentUserApi);
         if($person == null){
             $this->addFlash('error', $this->trans('You have to register first before you can upload surveys'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
@@ -164,7 +179,7 @@ class SurveyController extends AbstractController {
                 //Ok we have valid data so enter the survey data first
                 $surveyDate = $form['surveyDate']->getData();
                 $prePost = $form['prepost']->getData();
-                $uid = $currentUserApi->get('uid');
+                $uid = $this->currentUserApi->get('uid');
                 $survey->setUserId($uid);
                 $survey->setPrePost($prePost);
                 $survey->setSurveyDate($surveyDate);
@@ -206,6 +221,7 @@ class SurveyController extends AbstractController {
 
     /**
      * @Route("/delete/{survey}")
+     *
      * @param  $request
      * @param $survey
      * @return $response back to the modification screen
@@ -237,18 +253,18 @@ class SurveyController extends AbstractController {
 
     /**
      * @Route("/modify")
+     * @Theme("admin")
      * @param Request $request
      * @return $response
      */
     public function modifyAction(Request $request) {
-        $currentUserApi = $this->get('zikula_users_module.current_user');
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
-        if(!$currentUserApi->isLoggedIn()) {
+        if(!$this->currentUserApi->isLoggedIn()) {
             $this->addFlash('error', $this->trans('You are not authorized to modify any users. Please log in first and then you can modify your information'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
         }
-        $uid = $currentUserApi->get('uid');
+        $uid = $this->currentUserApi->get('uid');
         $em = $this->getDoctrine()->getManager();
         $surveys = null;
         if($this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)){

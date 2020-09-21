@@ -12,6 +12,7 @@ use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Symfony\Component\Routing\RouterInterface;
 use Paustian\PMCIModule\Form\Person;
 use Symfony\Component\Security\Core\Exception\AccessDeniedException;
@@ -31,7 +32,6 @@ class PersonController extends AbstractController {
     /**
      * @Route("")
      * @param $request
-     * 
      * @return Response The rendered output consisting mainly of the admin menu
      * 
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
@@ -90,9 +90,16 @@ class PersonController extends AbstractController {
 
         if ($form->isSubmitted() && $form->isValid()) {
             $formData = $form->getData();
+            //Search to see if this Email and course have been registred
+            $em = $this->getDoctrine()->getManager();
+            $criteria = ['email' => $person->getEmail(), 'course' => $person->getCourse()];
+            $personExists = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->findBy($criteria);
+            if($personExists){
+                $this->addFlash('status', $this->trans('This Email and course name has already been registered.'));
+                return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
+            }
 
             //Now notify the admin that someone wants the MCI
-
             $adminMail = $variableApi->getSystemVar('adminmail');
             $siteName = $variableApi->getSystemVar('sitename');
             $msgBody = $formData['name'] . $this->trans(' of ') . $formData['institution'] .  $this->trans(' has requested a copy of the MCI. Please email it to the address:\n' . $formData['email']);
@@ -103,12 +110,12 @@ class PersonController extends AbstractController {
                     ->subject($this->trans('A reqeust for the MCI'))
                     ->html($msgBody);
                 $mailer->send($message);
-                $this->addFlash('status', $this->trans('Thank you for submitting your request. It will be authorized within 1 business day.'));
-                $em = $this->getDoctrine()->getManager();
+
                 if (!$doMerge) {
                     $em->persist($person);
                 }
                 $em->flush();
+                $this->addFlash('status', $this->trans('Thank you for submitting your request. It will be authorized within 1 business day.'));
             } catch (TransportExceptionInterface $exception){
                 $this->addFlash('status', $this->trans('Your messaged failed, please check your email address and name.'));
             }
@@ -149,12 +156,13 @@ class PersonController extends AbstractController {
 
     /**
      * @Route("/modify")
+     * @Theme("admin")
      * @param Request $request
      * @return Response
      */
     public function modifyAction(Request $request) {
         $em = $this->getDoctrine()->getManager();
         $people = $em->getRepository("Paustian\PMCIModule\Entity\PersonEntity")->findAll();
-        return $this->render('PaustianPMCIModule/Person/pmci_person_modifyperson.html.twig', ['people' => $people]);
+        return $this->render('@PaustianPMCIModule/Person/pmci_person_modifyperson.html.twig', ['people' => $people]);
     }
 }

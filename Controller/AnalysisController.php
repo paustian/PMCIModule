@@ -13,7 +13,8 @@ use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Form\Analysis;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Zikula\UsersModule\Api\CurrentUserApi;
 use Symfony\Component\HttpFoundation\Response;
 
@@ -162,6 +163,7 @@ class AnalysisController extends AbstractController {
                 $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
                 $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
             }
+
             $response = $this->render('@PaustianPMCIModule/Analysis/pmci_analysis_results.html.twig', [
                     'match' => $match,
                     'studentData' => $matchedStudents,

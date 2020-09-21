@@ -50,22 +50,40 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         $menu = $this->factory->createItem('pmciMenuMain');
 
-        //Quickcheck functions
-        $menu->addChild('Create MCI users', [
+        $menu->addChild(
+            'Users', ['uri' => '#',
+        ])->setAttribute('icon', 'fas fa-user')
+            ->setAttribute('dropdown', true);
+
+
+        $menu['Users']->addChild('Create MCI users', [
             'route' => 'paustianpmcimodule_person_edit',
         ])->setAttribute('icon', 'fas fa-plus');
 
-        $menu->addChild('Edit or Delete MCI users', [
+        $menu['Users']->addChild('Edit or Delete MCI users', [
             'route' => 'paustianpmcimodule_person_modify',
         ])->setAttribute('icon', 'fas fa-list');
 
-        $menu->addChild('Edit MCI surveys', [
+        $menu->addChild(
+            'Surveys', ['uri' => '#',
+        ])->setAttribute('icon', 'fas fa-poll-h')
+            ->setAttribute('dropdown', true);
+
+        $menu['Surveys']->addChild('Edit MCI surveys', [
             'route' => 'paustianpmcimodule_survey_edit',
         ])->setAttribute('icon', 'fas fa-list');
 
-        $menu->addChild('Edit or Delete MCI surveys', [
+        $menu['Surveys']->addChild('Edit or Delete MCI surveys', [
             'route' => 'paustianpmcimodule_survey_modify',
         ])->setAttribute('icon', 'fas fa-list');
+
+        $menu['Surveys']->addChild('Upload Survey Data', [
+            'route' => 'paustianpmcimodule_survey_upload',
+        ])->setAttribute('icon', 'fas fa-upload');
+
+        $menu['Surveys']->addChild('Analyze Survey Data', [
+            'route' => 'paustianpmcimodule_analysis_index',
+        ])->setAttribute('icon', 'fas fa-chart-bar');
 
         return 0 === $menu->count() ? null : $menu;
     }

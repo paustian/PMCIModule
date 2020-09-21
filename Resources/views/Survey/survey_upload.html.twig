@@ -1,4 +1,6 @@
 {% form_theme form '@ZikulaFormExtension/Form/bootstrap_4_zikula_admin_layout.html.twig' %}
+
+{{ moduleHeader('user', '', '', false, true, false, true) }}
 <h3>
     <span class="fa fa-edit"></span>
     {{ "Upload your MCI data for analysis"|trans }}
@@ -14,7 +16,14 @@
     {{ form_row(form.surveyDate) }}
     {{ form_row(form.institution) }}
     {{ form_row(form.course) }}
-    {{ form_row(form.savedata) }}
+    <div class="form-grop row">
+        <label class="col-form-label col-md-3" for="survey_upload_institution">
+            {{ "Visibility"|trans }}
+        </label>
+        <div class="col-md-9">
+           {{ form_widget(form.savedata) }}
+        </div>
+    </div>
     <p>{{ "Uploading your data will make it available for others to use in comparisons. However, all student identification will be hidden."|trans }}</p>
 </fieldset>
 <div class="form-group">

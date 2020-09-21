@@ -38,7 +38,7 @@ class MCIDataEntity extends EntityAccess
 
     /**
      * @ORM\Column(type="date", name="respDate")
-     * @Assert\Date()
+     * @Assert\Type("\DateTimeInterface")
      */
     private $respDate;
 

@@ -38,8 +38,8 @@ class Survey extends AbstractType
         $builder
             ->add('prepost', ChoiceType::class, array(
                 'label' => 'Pre-instruction or Post-instruction',
-                'choices' => array('0' => 'Pre-instruction',
-                    '1' => 'Post-instruction' ),))
+                'choices' => array('Pre-instruction' => '0',
+                    'Post-instruction' => '1'),))
             ->add('institution', TextType::class, array('label' => 'Institution', 'required' => true))
             ->add('course', TextType::class, array('label' => 'Course', 'required' => true))
             ->add('surveyDate', DateType::class, array('widget' => 'single_text', 'label' => 'The date of the survey.'))

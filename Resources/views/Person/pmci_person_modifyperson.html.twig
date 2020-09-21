@@ -12,9 +12,9 @@
         <tr>
             <td>{{ person.name }}</td>
             <td class="actions">
-                <a href="{{ path('paustianpmcimodule_person_edit', { person: person.id }) }}" class="fa fa-pencil"
+                <a href="{{ path('paustianpmcimodule_person_edit', { person: person.id }) }}" class="fas fa-edit"
                    title="{{ "Edit a person"|trans }}"></a>
-                <a href="{{ path('paustianpmcimodule_person_delete', { person: person.id }) }}" class="fa fa-trash-o"
+                <a href="{{ path('paustianpmcimodule_person_delete', { person: person.id }) }}" class="fas fa-trash"
                    title="{{ "Delete a person"|trans }}"
                    onclick="return confirm('Are you sure you want to delete this person?')"></a>
             </td>
