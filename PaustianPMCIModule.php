@@ -2,7 +2,7 @@
 
 namespace Paustian\PMCIModule;
 
-use Zikula\Bundle\CoreBundle\Bundle\AbstractCoreModule;
+use Zikula\ExtensionsModule\AbstractCoreModule;
 
 /**
  * Base module definition for the admin module

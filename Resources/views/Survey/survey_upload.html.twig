@@ -1,56 +1,95 @@
-{% form_theme form 'ZikulaFormExtensionBundle:Form:bootstrap_3_zikula_admin_layout.html.twig' %}
-{% if hasPermission('PaustianQuickcheckModule::', '::', 'ACCESS_ADMIN') %}
-    {{ render(controller('ZikulaAdminModule:Admin:adminheader')) }}
-{% endif %}
-{{ moduleLinks() }}
-<div class="container-fluid">
-    <div class="row">
-        <h3>
-            <span class="fa fa-edit"></span>
-            {{ __("Upload your MCI data for analysis") }}
-        </h3>
-        <p>Upload your MCI data as a table delimited list. See the example for titles and format.</p>
-        {{ showflashes() }}
+{% form_theme form '@ZikulaFormExtension/Form/bootstrap_4_zikula_admin_layout.html.twig' %}
+{{ pageAddAsset('javascript', 'https://cdn.jsdelivr.net/npm/bs-custom-file-input/dist/bs-custom-file-input.min.js') }}
+{% set formScript %}
+    <script type="text/javascript">
+        (function($) {
+            $(document).ready(function() {
+                bsCustomFileInput.init()
+            });
+        })(jQuery);
+    </script>
+{% endset %}
+{{ pageAddAsset('footer', formScript) }}
+
+{{ moduleHeader('user', '', '', false, true, false, true) }}
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Upload your MCI data for analysis"|trans }}
+</h3>
+<p>Upload your MCI data as a table delimited list. See the example for titles and format.</p>
+{{ showflashes() }}
         {{ form_start(form) }}
         {{ form_errors(form) }}
-        <fieldset>
-            <legend>{{ __('Upload MCI Data') }}</legend>
-            {{ form_row(form.file, { 'attr': {'oninvalid': "setCustomValidity('You need to choose a file to upload.')"} }) }}
-            {{ form_row(form.prepost) }}
-            {{ form_row(form.surveyDate) }}
-            {{ form_row(form.institution) }}
-            {{ form_row(form.course) }}
-            {{ form_row(form.savedata) }}
-            <p>{{  __('Uploading your data will make it available for others to use in comparisons. However, all student identification will be hidden.') }}</p>
-        </fieldset>
-        <div class="form-group">
-            <div class="col-lg-offset-3 col-lg-9">
-                {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
-            </div>
+<fieldset>
+    <legend>{{ "Upload MCI Data"|trans }}</legend>
+    {{ form_row(form.file, { 'attr': {'oninvalid': "setCustomValidity('You need to choose a file to upload.')"} }) }}
+    {{ form_row(form.prepost) }}
+    {{ form_row(form.surveyDate) }}
+    {{ form_row(form.institution) }}
+    {{ form_row(form.course) }}
+    <div class="form-grop row">
+        <label class="col-form-label col-md-3" for="survey_upload_institution">
+            {{ "Visibility"|trans }}
+        </label>
+        <div class="col-md-9">
+           {{ form_widget(form.savedata) }}
         </div>
-        {{ form_end(form) }}
-        <p>{{  __('Below is a description of each data point. Those marked with an * are required in the file') }}</p>
-        <table class="table table-striped">
-            <thead>
-            <tr><td>{{  __('Element') }}</td><td>{{ __('Description') }}</td></tr>
-            </thead>
-            <tbody>
-            <tr><td>{{ __('StudentID') }}</td><td>{{ __('An up to 10-digit number that is unique to each student') }}</td></tr>
-            <tr><td>{{ __('Q1 to Q23') }}</td><td>{{ __('Responses to each question A=1, B=2, C=3, D=4') }}</td></tr>
-            <tr><td>{{ __('GPA') }}</td><td>{{ __('GPA of respondent: >3.5=1, 3.0-3.49=2, 2.5-3.0=3, 2.0-2.5=4, <2.0=5') }}</td></tr>
-            <tr><td>{{ __('Sex') }}</td><td>{{ __('Sex of respondent: male=1, female=2, other=3') }}</td></tr>
-            <tr><td>{{ __('Race') }}</td><td>{{ __('Race of respondent: American Indian/Alaskan Native=1, Black or African American=2, Asian or Pacific Islander=3, Hispanic/Latino=4, white=5, Other or Not reported=6') }}</td></tr>
-            <tr><td>{{ __('Major') }}</td><td>{{ __('The major of the respondent') }}</td></tr>
-            <tr><td>{{ __('Age') }}</td><td>{{ __('The age of the respondent: 1=18-20, 2=21-25, 3=26-30, 4=31=35, 5=36-40, 6=41-45, 7=46-55, 8=56-65, 9= >65') }}</td></tr>
-            <tr><td>{{ __('Esl') }}</td><td>{{ __('English as a second language: 1=yes, 2=no') }}</td></tr>
-            </tbody>
-        </table>
-        <p>{{ __('Below is an example of how to format the data. The first row should be the header and should be labeled exactly as shown. Each subsequent row contains survey results.') }}</p>
-        <pre>
-StudentID,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,Q17,Q18,Q19,Q22,Q23,Gpa,Sex,Race,Major,Age,Esl
-24353425,1,4,1,3,3,3,1,3,3,3,2,3,2,3,4,1,2,2,1,3,4,2,2,5,Genetics,2,2
-26546546,1,1,3,3,4,3,1,2,2,3,4,1,4,2,4,3,1,1,1,1,4,1,2,5,Biology ,1,2
-63453760,3,1,1,4,4,2,3,2,2,1,2,1,2,1,4,3,1,1,2,2,2,4,1,1,Microbiology,2,2
-        </pre>
+    </div>
+    <p>{{ "Uploading your data will make it available for others to use in comparisons. However, all student identification will be hidden."|trans }}</p>
+</fieldset>
+<div class="form-group">
+    <div class="col-lg-offset-3 col-lg-9">
+        {{ form_widget(form.add, {'attr': {'class': 'btn btn-success'}}) }}
     </div>
 </div>
+{{ form_end(form) }}
+<p>{{ "Below is a description of each data point. Those marked with an * are required in the file"|trans }}</p>
+<table class="table table-striped">
+    <thead>
+    <tr>
+        <td>{{ "Element"|trans }}</td>
+        <td>{{ "Description"|trans }}</td>
+    </tr>
+    </thead>
+    <tbody>
+    <tr>
+        <td>{{ "StudentID"|trans }}</td>
+        <td>{{ "An up to 10-digit number that is unique to each student"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Q1 to Q23"|trans }}</td>
+        <td>{{ "Responses to each question A=1, B=2, C=3, D=4. If the student did not respond to the question, put a 0"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "GPA"|trans }}</td>
+        <td>{{ "GPA of respondent: >3.5=1, 3.0-3.49=2, 2.5-3.0=3, 2.0-2.5=4, <2.0=5"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Sex"|trans }}</td>
+        <td>{{ "Sex of respondent: male=1, female=2, other=3"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Race"|trans }}</td>
+        <td>{{ "Race of respondent: American Indian/Alaskan Native=1, Black or African American=2, Asian or Pacific Islander=3, Hispanic/Latino=4, white=5, Other or Not reported=6"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Major"|trans }}</td>
+        <td>{{ "The major of the respondent. Put 0 if not reported"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Age"|trans }}</td>
+        <td>{{ "The age of the respondent: 1=18-20, 2=21-25, 3=26-30, 4=31=35, 5=36-40, 6=41-45, 7=46-55, 8=56-65, 9= >65"|trans }}</td>
+    </tr>
+    <tr>
+        <td>{{ "Esl"|trans }}</td>
+        <td>{{ "English as a second language: 1=yes, 2=no"|trans }}</td>
+    </tr>
+    </tbody>
+</table>
+<p>{{ "Below is an example of how to format the data. The first row should be the header and should be labeled exactly as shown. Each subsequent row contains survey results."|trans }}</p>
+<pre>
+StudentID,Q1,Q2,Q3,Q4,Q5,Q6,Q7,Q8,Q9,Q10,Q11,Q12,Q13,Q14,Q15,Q16,Q17,Q18,Q19,Q20,Q21,Q22,Q23,Gpa,Sex,Race,Major,Age,Esl
+4566718551,3,2,2,3,2,3,4,3,4,1,1,1,3,3,3,4,3,3,1,2,3,4,3,2,2,3,Food science,1,2
+2676758474,3,4,2,4,4,1,1,2,4,3,1,2,3,3,4,2,2,4,4,4,4,3,4,1,2,5,Animal Science ,1,2
+1233967127,4,1,3,2,4,2,3,2,2,3,1,3,3,1,4,1,3,1,3,4,4,4,4,1,1,5,Genetics and German,2,2
+</pre>

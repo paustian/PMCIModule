@@ -1,0 +1,14 @@
+services:
+  _defaults:
+    autowire: true
+    autoconfigure: true
+    public: false
+    bind:
+      $extension: '@Paustian\PMCIModule\PaustianPMCIModule'
+
+  Paustian\PMCIModule\:
+    resource: '../../*'
+
+  Paustian\PMCIModule\Helper\:
+    resource: '../../Helper/*'
+    lazy: true

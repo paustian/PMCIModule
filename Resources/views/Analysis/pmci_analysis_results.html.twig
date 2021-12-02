@@ -1,346 +1,415 @@
-{{ moduleLinks() }}
-<div class="container-fluid">
-    <div class="row">
-        <h3>
-            <span class="fa fa-edit"></span>
-            {{ __("Results of MCI Analysis") }}
-        </h3>
-        {{ showflashes() }}
+{{ moduleHeader('user', '', '', false, true, false, true) }}
+<h3>
+    <span class="fa fa-edit"></span>
+    {{ "Results of MCI Analysis"|trans }}
+</h3>
+{{ showflashes() }}
         {% if match %}
-        <fieldset>
-            <legend>{{ __('Student Performance') }}</legend>
-            <table class="table table-striped">
-                <tr><th>{{ __('Student ID') }}</th><th>{{ __('Pre Test Score') }}</th><th>{{ __('Post Test Score') }}</th><th>{{ __('Learning Gain') }}</th></tr>
-                {% for studentID, student in studentData %}
-                <tr><td>{{ loop.index }}</td><td>{{ student.preScore }}</td><td>{{ student.postScore }}</td><td>{{ student.lg }}</td></tr>
-                {% endfor %}
-                <tr><td>{{ __('Averages') }}</td><td>{{ avgTestGrades.preAvg }}</td><td>{{ avgTestGrades.postAvg }}</td><td>{{ lgavg }}</td></tr>
+            <fieldset>
+                <legend>{{ "Student Performance"|trans }}</legend>
+                <table class="table table-striped">
+                    <tr>
+                        <th>{{ "Student ID"|trans }}</th>
+                        <th>{{ "Pre Test Score"|trans }}</th>
+                        <th>{{ "Post Test Score"|trans }}</th>
+                        <th>{{ "Learning Gain"|trans }}</th>
+                    </tr>
+                    {% for studentID, student in studentData %}
+                        <tr>
+                            <td>{{ loop.index }}</td>
+                            <td>{{ student.preScore }}</td>
+                            <td>{{ student.postScore }}</td>
+                            <td>{{ student.lg }}</td>
+                        </tr>
+                    {% endfor %}
+                    <tr>
+                        <td>{{ "Averages"|trans }}</td>
+                        <td>{{ avgTestGrades.preAvg }}</td>
+                        <td>{{ avgTestGrades.postAvg }}</td>
+                        <td>{{ lgavg }}</td>
+                    </tr>
 
-            </table>
-        </fieldset>
-            <p>{{ __('Below is a comma separated list of the values above for use in graphing.') }}</p>
-        <textarea cols="100", rows="20">
+                </table>
+            </fieldset>
+            <p>{{ "Below is a comma separated list of the values above for use in graphing."|trans }}</p>
+            <textarea cols="100" , rows="20">
 Student ID,Pre Test Score,Post Test Score,Learning Gain
             {% for studentID, student in studentData %}
-{{ loop.index }},{{ student.preScore }},{{ student.postScore }},{{ student.lg }}
+                {{ loop.index }},{{ student.preScore }},{{ student.postScore }},{{ student.lg }}
             {% endfor %}
         </textarea>
         {% endif %}
-        <fieldset>
-            <legend>{{ __('Item performance') }}</legend>
-            <table class="table table-striped">
-                <tr>
-                    <th>{{ __('Test Item Number') }}</th>
-                    <th>{{ __('Pre Test Item Difficulty') }}</th>
-                    {%  if pbc %}
-                    <th>{{ __('Pre Test PBC') }}</th>
-                    {% endif %}
-                    {%  if itemD %}
-                        <th>{{ __('Pre Test Item Discrimination') }}</th>
-                    {% endif %}
-                    <th>{{ __('Post Test Item Difficulty') }}</th>
-                    {%  if pbc %}
-                    <th>{{ __('Post Test PBC') }}</th>
-                    {% endif %}
-                    {%  if itemD %}
-                        <th>{{ __('Post Test Item Discrimination') }}</th>
-                    {% endif %}
-                    <th>{{ __('Learning Gain') }}</th>
-                </tr>
-            {% for testItem in testItemResults %}
-                <tr>
-                    <td>{{ loop.index }}</td>
-                    <td>{{ testItem.pre }}</td>
-                    {%  if pbc %}
+<fieldset>
+    <legend>{{ "Item performance"|trans }}</legend>
+    <table class="table table-striped">
+        <tr>
+            <th>{{ "Test Item Number"|trans }}</th>
+            <th>{{ "Pre Test Item Difficulty"|trans }}</th>
+            {% if pbc %}
+                <th>{{ "Pre Test PBC"|trans }}</th>
+            {% endif %}
+            {% if itemD %}
+                <th>{{ "Pre Test Item Discrimination"|trans }}</th>
+            {% endif %}
+            <th>{{ "Post Test Item Difficulty"|trans }}</th>
+            {% if pbc %}
+                <th>{{ "Post Test PBC"|trans }}</th>
+            {% endif %}
+            {% if itemD %}
+                <th>{{ "Post Test Item Discrimination"|trans }}</th>
+            {% endif %}
+            <th>{{ "Learning Gain"|trans }}</th>
+        </tr>
+        {% for testItem in testItemResults %}
+            <tr>
+                <td>{{ loop.index }}</td>
+                <td>{{ testItem.pre }}</td>
+                {% if pbc %}
                     <td>{{ preTestItemPbc[loop.index] }}</td>
-                    {% endif %}
-                    {%  if itemD %}
-                        <td>{{ preTestItemDisc[loop.index] }}</td>
-                    {% endif %}
-                    <td>{{ testItem.post }}</td>
-                    {%  if pbc %}
+                {% endif %}
+                {% if itemD %}
+                    <td>{{ preTestItemDisc[loop.index] }}</td>
+                {% endif %}
+                <td>{{ testItem.post }}</td>
+                {% if pbc %}
                     <td>{{ postTestItemPbc[loop.index] }}</td>
-                    {% endif %}
-                    {%  if itemD %}
-                        <td>{{ postTestItemDisc[loop.index] }}</td>
-                    {% endif %}
-                    <td>{{ testItem.lg }}</td></tr>
-                {% endfor %}
-            </table>
-        </fieldset>
-        <fieldset>
-            <legend>{{ __('Item Performance by Fundamental Statement') }}</legend>
-            <table class="table table-striped">
-                <tr><th class="col-md-6">{{ __('Fundamental Statement') }}</th>
-                    <th class="col-md-1">{{ __('Question') }}</th>
-                    <th class="col-md-2">{{ __('Pre-Score Item Difficulty') }}</th>
-                    <th class="col-md-2">{{ __('Post-Score Item Difficulty') }}</th>
-                    <th class="col-md-2">{{ __('Learning Gain') }}</th></tr>
-                <tr><th colspan="5">{{ __('Evolution') }}</th></tr>
-                <tr><td>{{ __('1. Cells, organelles (e.g., mitochondria and chloroplasts), and all major metabolic pathways evolved from early prokaryotic cells. ') }}</td>
-                    <td>{{ __('2') }}</td>
-                    <td>{{ testItemResults[2].pre }}</td>
-                    <td>{{ testItemResults[2].post }}</td>
-                    <td>{{ testItemResults[2].lg }}</td>
-                </tr>
-                <tr><td>{{ __('2. Mutations and horizontal gene transfer, with the immense variety of microenvironments, have selected for a huge diversity of microorganisms. ') }}</td>
-                    <td>{{ __('1') }}</td>
-                    <td>{{ testItemResults[1].pre }}</td>
-                    <td>{{ testItemResults[1].post }}</td>
-                    <td>{{ testItemResults[1].lg }}</td>
-                </tr>
-                <tr><td>{{ __('3. Human impact on the environment influences the evolution of microorganisms (e.g., emerging diseases and the selection of antibiotic resistance).') }}</td>
-                    <td>{{ __('7') }}</td>
-                    <td>{{ testItemResults[7].pre }}</td>
-                    <td>{{ testItemResults[7].post }}</td>
-                    <td>{{ testItemResults[7].lg }}</td>
-                </tr>
-                <tr><td>{{ __('4. The traditional concept of species is not readily applicable to microbes due to asexual reproduction and the frequent occurrence of horizontal gene transfer.') }}</td>
-                    <td>{{ __('3') }}</td>
-                    <td>{{ testItemResults[3].pre }}</td>
-                    <td>{{ testItemResults[3].post }}</td>
-                    <td>{{ testItemResults[3].lg }}</td>
-                </tr>
-                <tr><td>{{ __('5. The evolutionary relatedness of organisms is best reflected in phylogenetic trees.') }}</td>
-                    <td>{{ __('2') }}</td>
-                    <td> {{ testItemResults[2].pre }}</td>
-                    <td>{{ testItemResults[2].post }}</td>
-                    <td>{{ testItemResults[2].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '23' }}</td>
-                    <td> {{ testItemResults[23].pre }}</td>
-                    <td>{{ testItemResults[23].post }}</td>
-                    <td>{{ testItemResults[23].lg }}</td>
-                </tr>
-                <tr><th colspan="5">{{ __('Cell Structure and Function') }}</th></tr>
-                <tr><td>{{ __('6. The structure and function of microorganisms have been revealed by the use of microscopy (including bright field, phase contrast, fluorescent, and electron). ') }}</td>
-                    <td>{{ __('8') }}</td>
-                    <td>{{ testItemResults[8].pre }}</td>
-                    <td>{{ testItemResults[8].post }}</td>
-                    <td>{{ testItemResults[8].lg }}</td>
-                </tr>
-                <tr><td>{{ __('7. Bacteria have unique cell structures that can be targets for antibiotics, immunity, and phage infection.') }}</td>
-                    <td>{{ __('5') }}</td>
-                    <td>{{ testItemResults[5].pre }}</td>
-                    <td>{{ testItemResults[5].post }}</td>
-                    <td>{{ testItemResults[5].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '6' }}</td>
-                    <td> {{ testItemResults[6].pre }}</td>
-                    <td>{{ testItemResults[6].post }}</td>
-                    <td>{{ testItemResults[6].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '19' }}</td>
-                    <td> {{ testItemResults[19].pre }}</td>
-                    <td>{{ testItemResults[19].post }}</td>
-                    <td>{{ testItemResults[19].lg }}</td>
-                </tr>
-                <tr><td>{{ __('8. Bacteria and Archaea have specialized structures (e.g., flagella, endospores, and pili) that often confer critical capabilities.') }}</td>
-                    <td>{{ __('4') }}</td>
-                    <td>{{ testItemResults[4].pre }}</td>
-                    <td>{{ testItemResults[4].post }}</td>
-                    <td>{{ testItemResults[4].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '6' }}</td>
-                    <td> {{ testItemResults[6].pre }}</td>
-                    <td>{{ testItemResults[6].post }}</td>
-                    <td>{{ testItemResults[6].lg }}</td>
-                </tr>
-                <tr><td>{{ __('9. While microscopic eukaryotes (e.g., fungi, protozoa, and algae) carry out some of the same processes as bacteria, many of the cellular properties are fundamentally different.') }}</td>
-                    <td>{{ __('9') }}</td>
-                    <td>{{ testItemResults[9].pre }}</td>
-                    <td>{{ testItemResults[9].post }}</td>
-                    <td>{{ testItemResults[9].lg }}</td>
-                </tr>
-                <tr><td>{{ __('10. The replication cycles of viruses (lytic and lysogenic) differ among viruses and are determined by their unique structures and genomes.') }}</td>
-                    <td>{{ __('17') }}</td>
-                    <td>{{ testItemResults[17].pre }}</td>
-                    <td>{{ testItemResults[17].post }}</td>
-                    <td>{{ testItemResults[17].lg }}</td>
-                </tr>
-                <tr><th colspan="5">{{ __('Metabolic Pathways') }}</th></tr>
-                <tr><td>{{ __('11. Bacteria and Archaea exhibit extensive, and often unique, metabolic diversity (e.g. nitrogen fixation, methane production, anoxygenic photosynthesis).') }}</td>
-                    <td>{{ __('20') }}</td>
-                    <td>{{ testItemResults[20].pre }}</td>
-                    <td>{{ testItemResults[20].post }}</td>
-                    <td>{{ testItemResults[20].lg }}</td>
-                </tr>
-                <tr><td>{{ __('12. The interactions of microorganisms among themselves and with their environment are determined by their metabolic abilities (e.g. quorum sensing, oxygen consumption, nitrogen transformations).') }}</td>
-                    <td>{{ __('13') }}</td>
-                    <td>{{ testItemResults[13].pre }}</td>
-                    <td>{{ testItemResults[13].post }}</td>
-                    <td>{{ testItemResults[13].lg }}</td>
-                </tr>
-                <tr><td>{{ __('13. The survival and growth of any microorganism in a given environment depends on its metabolic characteristics.') }}</td>
-                    <td>{{ __('11') }}</td>
-                    <td>{{ testItemResults[11].pre }}</td>
-                    <td>{{ testItemResults[11].post }}</td>
-                    <td>{{ testItemResults[11].lg }}</td>
-                </tr>
-                <tr><td>{{ __('14. The growth of microorganisms can be controlled by physical, chemical, mechanical, or biological means.') }}</td>
-                    <td>{{ __('5') }}</td>
-                    <td>{{ testItemResults[5].pre }}</td>
-                    <td>{{ testItemResults[5].post }}</td>
-                    <td>{{ testItemResults[5].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '10' }}</td>
-                    <td> {{ testItemResults[10].pre }}</td>
-                    <td>{{ testItemResults[10].post }}</td>
-                    <td>{{ testItemResults[10].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '12' }}</td>
-                    <td> {{ testItemResults[12].pre }}</td>
-                    <td>{{ testItemResults[12].post }}</td>
-                    <td>{{ testItemResults[12].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '19' }}</td>
-                    <td> {{ testItemResults[19].pre }}</td>
-                    <td>{{ testItemResults[19].post }}</td>
-                    <td>{{ testItemResults[19].lg }}</td>
-                </tr>
-                <tr><th colspan="5">{{ __('Information Flow and Genetics') }}</th></tr>
-                <tr><td>{{ __('15. Genetic variations can impact microbial functions (e.g., in biofilm formation, pathogenicity, and drug resistance).') }}</td>
-                    <td>{{ __('4') }}</td>
-                    <td>{{ testItemResults[4].pre }}</td>
-                    <td>{{ testItemResults[4].post }}</td>
-                    <td>{{ testItemResults[4].lg }}</td>
-                </tr>
-                <tr><td>{{ __('16. Although the central dogma is universal in all cells, the processes of replication, transcription, and translation differ in Bacteria, Archaea, and Eukaryotes.') }}</td>
-                    <td>{{ __('16') }}</td>
-                    <td>{{ testItemResults[16].pre }}</td>
-                    <td>{{ testItemResults[16].post }}</td>
-                    <td>{{ testItemResults[16].lg }}</td>
-                </tr>
-                <tr><td>{{ __('17. The regulation of gene expression is influenced by external and internal molecular cues and/or signals.') }}</td>
-                    <td>{{ __('15') }}</td>
-                    <td>{{ testItemResults[15].pre }}</td>
-                    <td>{{ testItemResults[15].post }}</td>
-                    <td>{{ testItemResults[15].lg }}</td>
-                </tr>
-                <tr><td>{{ __('18. The synthesis of viral genetic material and proteins is dependent on host cells.') }}</td>
-                    <td>{{ __('17') }}</td>
-                    <td>{{ testItemResults[17].pre }}</td>
-                    <td>{{ testItemResults[17].post }}</td>
-                    <td>{{ testItemResults[17].lg }}</td>
-                </tr>
-                <tr><td>{{ __('19. Cell genomes can be manipulated to alter cell function.') }}</td>
-                    <td>{{ __('15') }}</td>
-                    <td>{{ testItemResults[15].pre }}</td>
-                    <td>{{ testItemResults[15].post }}</td>
-                    <td>{{ testItemResults[15].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '16' }}</td>
-                    <td> {{ testItemResults[16].pre }}</td>
-                    <td>{{ testItemResults[16].post }}</td>
-                    <td>{{ testItemResults[16].lg }}</td>
-                </tr>
-                <tr><th colspan="5">{{ __('Microbial Systems') }}</th></tr>
-                <tr><td>{{ __('20. Microorganisms are ubiquitous and live in diverse and dynamic ecosystems.') }}</td>
-                    <td>{{ __('7') }}</td>
-                    <td>{{ testItemResults[7].pre }}</td>
-                    <td>{{ testItemResults[7].post }}</td>
-                    <td>{{ testItemResults[7].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '13' }}</td>
-                    <td> {{ testItemResults[13].pre }}</td>
-                    <td>{{ testItemResults[13].post }}</td>
-                    <td>{{ testItemResults[13].lg }}</td>
-                </tr>
-                <tr><td>{{ __('21 Most bacteria in nature live in biofilm communities.') }}</td>
-                    <td>{{ __('4') }}</td>
-                    <td>{{ testItemResults[4].pre }}</td>
-                    <td>{{ testItemResults[4].post }}</td>
-                    <td>{{ testItemResults[4].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '21' }}</td>
-                    <td> {{ testItemResults[21].pre }}</td>
-                    <td>{{ testItemResults[21].post }}</td>
-                    <td>{{ testItemResults[21].lg }}</td>
-                </tr>
-                <tr><td>{{ __('22. Microorganisms and their environment interact with and modify each other.') }}</td>
-                    <td>{{ __('7') }}</td>
-                    <td>{{ testItemResults[7].pre }}</td>
-                    <td>{{ testItemResults[7].post }}</td>
-                    <td>{{ testItemResults[7].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '13' }}</td>
-                    <td> {{ testItemResults[13].pre }}</td>
-                    <td>{{ testItemResults[13].post }}</td>
-                    <td>{{ testItemResults[13].lg }}</td>
-                </tr>
-                <tr><td>{{ __('23. Microorganisms, cellular and viral, can interact with both human and non-human hosts in beneficial, neutral, or detrimental ways.') }}</td>
-                    <td>{{ __('10') }}</td>
-                    <td>{{ testItemResults[10].pre }}</td>
-                    <td>{{ testItemResults[10].post }}</td>
-                    <td>{{ testItemResults[10].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '18' }}</td>
-                    <td> {{ testItemResults[18].pre }}</td>
-                    <td>{{ testItemResults[18].post }}</td>
-                    <td>{{ testItemResults[18].lg }}</td>
-                </tr>
-                <tr><th colspan="5">{{ __('Impact of Microorganisms') }}</th></tr>
-                <tr><td>{{ __('24. Microbes are essential for life as we know it and the processes that support life (e.g., in biogeochemical cycles and plant and/or animal microbiota).') }}</td>
-                    <td>{{ __('7') }}</td>
-                    <td>{{ testItemResults[7].pre }}</td>
-                    <td>{{ testItemResults[7].post }}</td>
-                    <td>{{ testItemResults[7].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ '18' }}</td>
-                    <td> {{ testItemResults[18].pre }}</td>
-                    <td>{{ testItemResults[18].post }}</td>
-                    <td>{{ testItemResults[18].lg }}</td>
-                </tr>
-                <tr><td>{{ __('25. Microorganisms provide essential models that give us fundamental knowledge about life processes.') }}</td>
-                    <td>{{ __('14') }}</td>
-                    <td>{{ testItemResults[14].pre }}</td>
-                    <td>{{ testItemResults[14].post }}</td>
-                    <td>{{ testItemResults[14].lg }}</td>
-                </tr>
-                <tr><td>{{ __('26 Humans utilize and harness microbes and their products') }}</td>
-                    <td>{{ __('16') }}</td>
-                    <td>{{ testItemResults[16].pre }}</td>
-                    <td>{{ testItemResults[16].post }}</td>
-                    <td>{{ testItemResults[16].lg }}</td>
-                </tr>
-                <tr><td>{{ __('27. Because the true diversity of microbial life is largely unknown, its effects and potential benefits have not been fully explored.') }}</td>
-                    <td>{{ __('7') }}</td>
-                    <td>{{ testItemResults[7].pre }}</td>
-                    <td>{{ testItemResults[7].post }}</td>
-                    <td>{{ testItemResults[7].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ __('18') }}</td>
-                    <td>{{ testItemResults[18].pre }}</td>
-                    <td>{{ testItemResults[18].post }}</td>
-                    <td>{{ testItemResults[18].lg }}</td>
-                </tr>
-                <tr><td></td>
-                    <td>{{ __('22') }}</td>
-                    <td>{{ testItemResults[22].pre }}</td>
-                    <td>{{ testItemResults[22].post }}</td>
-                    <td>{{ testItemResults[22].lg }}</td>
-                </tr>
-                <tr><td>{{ __('Immunology: The immune system recognizes microbial pathogens and fights against disease') }}</td>
-                    <td>{{ __('10') }}</td>
-                    <td>{{ testItemResults[10].pre }}</td>
-                    <td>{{ testItemResults[10].post }}</td>
-                    <td>{{ testItemResults[10].lg }}</td>
-                </tr>
-            </table>
-        </fieldset>
-    </div>
-</div>
+                {% endif %}
+                {% if itemD %}
+                    <td>{{ postTestItemDisc[loop.index] }}</td>
+                {% endif %}
+                <td>{{ testItem.lg }}</td>
+            </tr>
+        {% endfor %}
+    </table>
+</fieldset>
+<fieldset>
+    <legend>{{ "Item Performance by Fundamental Statement"|trans }}</legend>
+    <table class="table table-striped">
+        <tr>
+            <th class="col-md-6">{{ "Fundamental Statement"|trans }}</th>
+            <th class="col-md-1">{{ "Question"|trans }}</th>
+            <th class="col-md-2">{{ "Pre-Score Item Difficulty"|trans }}</th>
+            <th class="col-md-2">{{ "Post-Score Item Difficulty"|trans }}</th>
+            <th class="col-md-2">{{ "Learning Gain"|trans }}</th>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Evolution"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "1. Cells, organelles (e.g., mitochondria and chloroplasts), and all major metabolic pathways evolved from early prokaryotic cells. "|trans }}</td>
+            <td>{{ "2"|trans }}</td>
+            <td>{{ testItemResults[2].pre }}</td>
+            <td>{{ testItemResults[2].post }}</td>
+            <td>{{ testItemResults[2].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "2. Mutations and horizontal gene transfer, with the immense variety of microenvironments, have selected for a huge diversity of microorganisms. "|trans }}</td>
+            <td>{{ "1"|trans }}</td>
+            <td>{{ testItemResults[1].pre }}</td>
+            <td>{{ testItemResults[1].post }}</td>
+            <td>{{ testItemResults[1].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "3. Human impact on the environment influences the evolution of microorganisms (e.g., emerging diseases and the selection of antibiotic resistance)."|trans }}</td>
+            <td>{{ "7"|trans }}</td>
+            <td>{{ testItemResults[7].pre }}</td>
+            <td>{{ testItemResults[7].post }}</td>
+            <td>{{ testItemResults[7].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "4. The traditional concept of species is not readily applicable to microbes due to asexual reproduction and the frequent occurrence of horizontal gene transfer."|trans }}</td>
+            <td>{{ "3"|trans }}</td>
+            <td>{{ testItemResults[3].pre }}</td>
+            <td>{{ testItemResults[3].post }}</td>
+            <td>{{ testItemResults[3].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "5. The evolutionary relatedness of organisms is best reflected in phylogenetic trees."|trans }}</td>
+            <td>{{ "2"|trans }}</td>
+            <td> {{ testItemResults[2].pre }}</td>
+            <td>{{ testItemResults[2].post }}</td>
+            <td>{{ testItemResults[2].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '23' }}</td>
+            <td> {{ testItemResults[23].pre }}</td>
+            <td>{{ testItemResults[23].post }}</td>
+            <td>{{ testItemResults[23].lg }}</td>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Cell Structure and Function"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "6. The structure and function of microorganisms have been revealed by the use of microscopy (including bright field, phase contrast, fluorescent, and electron). "|trans }}</td>
+            <td>{{ "8"|trans }}</td>
+            <td>{{ testItemResults[8].pre }}</td>
+            <td>{{ testItemResults[8].post }}</td>
+            <td>{{ testItemResults[8].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "7. Bacteria have unique cell structures that can be targets for antibiotics, immunity, and phage infection."|trans }}</td>
+            <td>{{ "5"|trans }}</td>
+            <td>{{ testItemResults[5].pre }}</td>
+            <td>{{ testItemResults[5].post }}</td>
+            <td>{{ testItemResults[5].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '6' }}</td>
+            <td> {{ testItemResults[6].pre }}</td>
+            <td>{{ testItemResults[6].post }}</td>
+            <td>{{ testItemResults[6].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '19' }}</td>
+            <td> {{ testItemResults[19].pre }}</td>
+            <td>{{ testItemResults[19].post }}</td>
+            <td>{{ testItemResults[19].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "8. Bacteria and Archaea have specialized structures (e.g., flagella, endospores, and pili) that often confer critical capabilities."|trans }}</td>
+            <td>{{ "4"|trans }}</td>
+            <td>{{ testItemResults[4].pre }}</td>
+            <td>{{ testItemResults[4].post }}</td>
+            <td>{{ testItemResults[4].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '6' }}</td>
+            <td> {{ testItemResults[6].pre }}</td>
+            <td>{{ testItemResults[6].post }}</td>
+            <td>{{ testItemResults[6].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "9. While microscopic eukaryotes (e.g., fungi, protozoa, and algae) carry out some of the same processes as bacteria, many of the cellular properties are fundamentally different."|trans }}</td>
+            <td>{{ "9"|trans }}</td>
+            <td>{{ testItemResults[9].pre }}</td>
+            <td>{{ testItemResults[9].post }}</td>
+            <td>{{ testItemResults[9].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "10. The replication cycles of viruses (lytic and lysogenic) differ among viruses and are determined by their unique structures and genomes."|trans }}</td>
+            <td>{{ "17"|trans }}</td>
+            <td>{{ testItemResults[17].pre }}</td>
+            <td>{{ testItemResults[17].post }}</td>
+            <td>{{ testItemResults[17].lg }}</td>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Metabolic Pathways"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "11. Bacteria and Archaea exhibit extensive, and often unique, metabolic diversity (e.g. nitrogen fixation, methane production, anoxygenic photosynthesis)."|trans }}</td>
+            <td>{{ "20"|trans }}</td>
+            <td>{{ testItemResults[20].pre }}</td>
+            <td>{{ testItemResults[20].post }}</td>
+            <td>{{ testItemResults[20].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "12. The interactions of microorganisms among themselves and with their environment are determined by their metabolic abilities (e.g. quorum sensing, oxygen consumption, nitrogen transformations)."|trans }}</td>
+            <td>{{ "13"|trans }}</td>
+            <td>{{ testItemResults[13].pre }}</td>
+            <td>{{ testItemResults[13].post }}</td>
+            <td>{{ testItemResults[13].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "13. The survival and growth of any microorganism in a given environment depends on its metabolic characteristics."|trans }}</td>
+            <td>{{ "11"|trans }}</td>
+            <td>{{ testItemResults[11].pre }}</td>
+            <td>{{ testItemResults[11].post }}</td>
+            <td>{{ testItemResults[11].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "14. The growth of microorganisms can be controlled by physical, chemical, mechanical, or biological means."|trans }}</td>
+            <td>{{ "5"|trans }}</td>
+            <td>{{ testItemResults[5].pre }}</td>
+            <td>{{ testItemResults[5].post }}</td>
+            <td>{{ testItemResults[5].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '10' }}</td>
+            <td> {{ testItemResults[10].pre }}</td>
+            <td>{{ testItemResults[10].post }}</td>
+            <td>{{ testItemResults[10].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '12' }}</td>
+            <td> {{ testItemResults[12].pre }}</td>
+            <td>{{ testItemResults[12].post }}</td>
+            <td>{{ testItemResults[12].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '19' }}</td>
+            <td> {{ testItemResults[19].pre }}</td>
+            <td>{{ testItemResults[19].post }}</td>
+            <td>{{ testItemResults[19].lg }}</td>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Information Flow and Genetics"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "15. Genetic variations can impact microbial functions (e.g., in biofilm formation, pathogenicity, and drug resistance)."|trans }}</td>
+            <td>{{ "4"|trans }}</td>
+            <td>{{ testItemResults[4].pre }}</td>
+            <td>{{ testItemResults[4].post }}</td>
+            <td>{{ testItemResults[4].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "16. Although the central dogma is universal in all cells, the processes of replication, transcription, and translation differ in Bacteria, Archaea, and Eukaryotes."|trans }}</td>
+            <td>{{ "16"|trans }}</td>
+            <td>{{ testItemResults[16].pre }}</td>
+            <td>{{ testItemResults[16].post }}</td>
+            <td>{{ testItemResults[16].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "17. The regulation of gene expression is influenced by external and internal molecular cues and/or signals."|trans }}</td>
+            <td>{{ "15"|trans }}</td>
+            <td>{{ testItemResults[15].pre }}</td>
+            <td>{{ testItemResults[15].post }}</td>
+            <td>{{ testItemResults[15].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "18. The synthesis of viral genetic material and proteins is dependent on host cells."|trans }}</td>
+            <td>{{ "17"|trans }}</td>
+            <td>{{ testItemResults[17].pre }}</td>
+            <td>{{ testItemResults[17].post }}</td>
+            <td>{{ testItemResults[17].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "19. Cell genomes can be manipulated to alter cell function."|trans }}</td>
+            <td>{{ "15"|trans }}</td>
+            <td>{{ testItemResults[15].pre }}</td>
+            <td>{{ testItemResults[15].post }}</td>
+            <td>{{ testItemResults[15].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '16' }}</td>
+            <td> {{ testItemResults[16].pre }}</td>
+            <td>{{ testItemResults[16].post }}</td>
+            <td>{{ testItemResults[16].lg }}</td>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Microbial Systems"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "20. Microorganisms are ubiquitous and live in diverse and dynamic ecosystems."|trans }}</td>
+            <td>{{ "7"|trans }}</td>
+            <td>{{ testItemResults[7].pre }}</td>
+            <td>{{ testItemResults[7].post }}</td>
+            <td>{{ testItemResults[7].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '13' }}</td>
+            <td> {{ testItemResults[13].pre }}</td>
+            <td>{{ testItemResults[13].post }}</td>
+            <td>{{ testItemResults[13].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "21 Most bacteria in nature live in biofilm communities."|trans }}</td>
+            <td>{{ "4"|trans }}</td>
+            <td>{{ testItemResults[4].pre }}</td>
+            <td>{{ testItemResults[4].post }}</td>
+            <td>{{ testItemResults[4].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '21' }}</td>
+            <td> {{ testItemResults[21].pre }}</td>
+            <td>{{ testItemResults[21].post }}</td>
+            <td>{{ testItemResults[21].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "22. Microorganisms and their environment interact with and modify each other."|trans }}</td>
+            <td>{{ "7"|trans }}</td>
+            <td>{{ testItemResults[7].pre }}</td>
+            <td>{{ testItemResults[7].post }}</td>
+            <td>{{ testItemResults[7].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '13' }}</td>
+            <td> {{ testItemResults[13].pre }}</td>
+            <td>{{ testItemResults[13].post }}</td>
+            <td>{{ testItemResults[13].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "23. Microorganisms, cellular and viral, can interact with both human and non-human hosts in beneficial, neutral, or detrimental ways."|trans }}</td>
+            <td>{{ "10"|trans }}</td>
+            <td>{{ testItemResults[10].pre }}</td>
+            <td>{{ testItemResults[10].post }}</td>
+            <td>{{ testItemResults[10].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '18' }}</td>
+            <td> {{ testItemResults[18].pre }}</td>
+            <td>{{ testItemResults[18].post }}</td>
+            <td>{{ testItemResults[18].lg }}</td>
+        </tr>
+        <tr>
+            <th colspan="5">{{ "Impact of Microorganisms"|trans }}</th>
+        </tr>
+        <tr>
+            <td>{{ "24. Microbes are essential for life as we know it and the processes that support life (e.g., in biogeochemical cycles and plant and/or animal microbiota)."|trans }}</td>
+            <td>{{ "7"|trans }}</td>
+            <td>{{ testItemResults[7].pre }}</td>
+            <td>{{ testItemResults[7].post }}</td>
+            <td>{{ testItemResults[7].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ '18' }}</td>
+            <td> {{ testItemResults[18].pre }}</td>
+            <td>{{ testItemResults[18].post }}</td>
+            <td>{{ testItemResults[18].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "25. Microorganisms provide essential models that give us fundamental knowledge about life processes."|trans }}</td>
+            <td>{{ "14"|trans }}</td>
+            <td>{{ testItemResults[14].pre }}</td>
+            <td>{{ testItemResults[14].post }}</td>
+            <td>{{ testItemResults[14].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "26 Humans utilize and harness microbes and their products"|trans }}</td>
+            <td>{{ "16"|trans }}</td>
+            <td>{{ testItemResults[16].pre }}</td>
+            <td>{{ testItemResults[16].post }}</td>
+            <td>{{ testItemResults[16].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "27. Because the true diversity of microbial life is largely unknown, its effects and potential benefits have not been fully explored."|trans }}</td>
+            <td>{{ "7"|trans }}</td>
+            <td>{{ testItemResults[7].pre }}</td>
+            <td>{{ testItemResults[7].post }}</td>
+            <td>{{ testItemResults[7].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ "18"|trans }}</td>
+            <td>{{ testItemResults[18].pre }}</td>
+            <td>{{ testItemResults[18].post }}</td>
+            <td>{{ testItemResults[18].lg }}</td>
+        </tr>
+        <tr>
+            <td></td>
+            <td>{{ "22"|trans }}</td>
+            <td>{{ testItemResults[22].pre }}</td>
+            <td>{{ testItemResults[22].post }}</td>
+            <td>{{ testItemResults[22].lg }}</td>
+        </tr>
+        <tr>
+            <td>{{ "Immunology: The immune system recognizes microbial pathogens and fights against disease"|trans }}</td>
+            <td>{{ "10"|trans }}</td>
+            <td>{{ testItemResults[10].pre }}</td>
+            <td>{{ testItemResults[10].post }}</td>
+            <td>{{ testItemResults[10].lg }}</td>
+        </tr>
+    </table>
+</fieldset>

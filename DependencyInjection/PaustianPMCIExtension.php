@@ -16,6 +16,6 @@ class PaustianPMCIExtension extends Extension
     {
         $loader = new YamlFileLoader($container, new FileLocator(realpath(__DIR__ . '/../Resources/config')));
 
-        $loader->load('services.yml');
+        $loader->load('services.yaml');
     }
 }

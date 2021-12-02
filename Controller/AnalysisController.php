@@ -11,10 +11,14 @@ namespace Paustian\PMCIModule\Controller;
 use Paustian\PMCIModule\Entity\PersonEntity;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Form\Analysis;
-use Zikula\Core\Controller\AbstractController;
+use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Route; // used in annotations - do not remove
-use Sensio\Bundle\FrameworkExtraBundle\Configuration\Method; // used in annotations - do not remove
+use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ThemeModule\Engine\Annotation\Theme;
+use Zikula\UsersModule\Api\CurrentUserApi;
+use Symfony\Component\HttpFoundation\Response;
+
+// used in annotations - do not remove
 
 
 class AnalysisController extends AbstractController {
@@ -23,36 +27,44 @@ class AnalysisController extends AbstractController {
      * @param $request - the incoming request.
      * The main entry point
      *
-     * @return $response The rendered output consisting mainly of the admin menu
-     *
-     * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
+     * @param Request $request
+     * @param CurrentUserApi $currentUserApi
+     * @return Response
      */
-    public function indexAction(Request $request) {
-        $currentUserApi = $this->get('zikula_users_module.current_user');
+    public function indexAction(Request $request,
+                                CurrentUserApi $currentUserApi)  {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
         if(!$currentUserApi->isLoggedIn()) {
-            $this->addFlash('error', $this->__('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
+            $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
 
         //security check
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
-            $this->addFlash('error', $this->__('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            $this->addFlash('error', $this->trans('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
+        $em = $this->getDoctrine()->getManager();
+        $qb = $em->createQueryBuilder('u');
+        $qb->select('u')
+            ->from('Paustian\PMCIModule\Entity\SurveyEntity', 'u');
+        //restrict access to only your surveys unless you have admin access to this module
+        $qb->where($qb->expr()->eq('u.userId', ":uid"))
+                ->setParameter("uid", $currentUserApi->get('uid'));
+        $query = $qb->getQuery();
+        $results = $query->getResult();
 
-        $form = $this->createForm(Analysis::class);
+        $form = $this->createForm(Analysis::class, ['choiceOptions' => $results]);
 
         $form->handleRequest($request);
-        $em = $this->getDoctrine()->getManager();
-        $currentUserApi = $this->get('zikula_users_module.current_user');
+
         $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
         $mciRepo = $em->getRepository('Paustian\PMCIModule\Entity\MCIDataEntity');
         $removeSurvey1 = $removeSurvey2 = false;
 
-        if ($form->isValid()) {
+        if($form->isSubmitted() && $form->isValid()) {
             $match = $form->get('match')->getData();
             //Grab the presurvey
             $survey1 = $form->get('survey1')->getData();
@@ -129,7 +141,7 @@ class AnalysisController extends AbstractController {
                 if($lgstudents){
                     $avgLg = $mciRepo->calcStudentLearningGains($matchedStudents);
                     if($avgLg === false){
-                        $this->addFlash('error', $this->__('Something is wrong in how you set up to calculate learning gains.'));
+                        $this->addFlash('error', $this->trans('Something is wrong in how you set up to calculate learning gains.'));
                         return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
                     }
                 }
@@ -151,7 +163,8 @@ class AnalysisController extends AbstractController {
                 $preTestItemPbc = $mciRepo->calculatePbc($survey1, $options);
                 $postTestItemPbc = $mciRepo->calculatePbc($survey2, $options);
             }
-            $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_results.html.twig', [
+
+            $response = $this->render('@PaustianPMCIModule/Analysis/pmci_analysis_results.html.twig', [
                     'match' => $match,
                     'studentData' => $matchedStudents,
                     'lgstudents' => $lgstudents,
@@ -181,16 +194,17 @@ class AnalysisController extends AbstractController {
         }
 
         // Return a page of menu items.
-        $response = $this->render('PaustianPMCIModule:Analysis:pmci_analysis_index.html.twig', [
+        $response = $this->render('@PaustianPMCIModule/Analysis/pmci_analysis_index.html.twig', [
                 'form' => $form->createView(),]);
         return $response;
     }
 
     /**
      * @param $inFile
-     * @return mixed
+     * @return array
      */
-    private function _getSurveyData($inFile){
+
+    private function _getSurveyData($inFile) {
         $em = $this->getDoctrine()->getManager();
         $surveyRepo = $em->getRepository('Paustian\PMCIModule\Entity\SurveyEntity');
         $csv = $surveyRepo->parseCsv($inFile);
@@ -200,6 +214,7 @@ class AnalysisController extends AbstractController {
         }
         return $csv;
     }
+
 
     private function _createSurvey($csv, PersonEntity $person, $date, $preSurvey=true){
         //create the survey

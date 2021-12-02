@@ -1,7 +1,7 @@
 <?php
 namespace Paustian\PMCIModule\Entity;
 
-use Zikula\Core\Doctrine\EntityAccess;
+use Zikula\Bundle\CoreBundle\Doctrine\EntityAccess;
 use Doctrine\ORM\Mapping as ORM;
 use Symfony\Component\Validator\Constraints as Assert;
 
@@ -38,7 +38,7 @@ class SurveyEntity extends EntityAccess {
     
     /**
      * @ORM\Column(type="date")
-     * @Assert\Date()
+     * @Assert\Type("\DateTimeInterface")
      */
     public $surveyDate;
 
@@ -165,7 +165,7 @@ class SurveyEntity extends EntityAccess {
         $this->course = $course;
     }
 
-    public function getDisplayName(){
+    public function getDisplayName() {
         return $this->institution . "-" . $this->course . "-" . $this->getSurveyDate()->format('m-d-Y');
     }
 }
