@@ -95,6 +95,12 @@ class ExtensionMenu implements ExtensionMenuInterface
 
         $menu = $this->factory->createItem('pmciMenuMain');
 
+        if ($this->permissionApi->hasPermission($this->getBundleName() . '::', '::', ACCESS_ADMIN)) {
+            $menu->addChild('Admin Interface', [
+                'route' => 'paustianpmcimodule_survey_modify',
+            ])->setAttribute('icon', 'fas fa-wrench');
+        }
+
         $menu->addChild('Register to receive the MCI', [
             'route' => 'paustianpmcimodule_person_edit',
         ])->setAttribute('icon', 'fas fa-plus');

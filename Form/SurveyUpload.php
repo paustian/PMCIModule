@@ -44,7 +44,7 @@ class SurveyUpload extends AbstractType
                 'required' => true,
                 'mapped' => false,
                 'constraints' => [
-                    new File(['maxSize' => '10240k', 'mimeTypes' => ['text/csv']]),
+                    new File(['maxSize' => '10240k', 'mimeTypes' => ['text/csv','text/plain']]),
                     'mimeTypeMessage' => 'Please make sure you are uploading a text, csv file'
                     ]
                 ])

@@ -28,7 +28,7 @@
       "url": "pmci",
       "capabilities": {
         "admin": {
-          "route": "paustianpmcimodule_person_edit"
+          "route": "paustianpmcimodule_survey_modify"
         }
       },
       "securityschema": {
