@@ -3,6 +3,8 @@
     <span class="fa fa-edit"></span>
     {{ "Results of MCI Analysis"|trans }}
 </h3>
+<p>The pre-survey was: {{ survey1Name }}</p>
+<p>The post-survey was: {{ survey2Name }}</p>
 {{ showflashes() }}
         {% if match %}
             <fieldset>
@@ -32,7 +34,7 @@
                 </table>
             </fieldset>
             <p>{{ "Below is a comma separated list of the values above for use in graphing."|trans }}</p>
-            <textarea cols="100" , rows="20">
+            <textarea cols="100" rows="20">
 Student ID,Pre Test Score,Post Test Score,Learning Gain
             {% for studentID, student in studentData %}
                 {{ loop.index }},{{ student.preScore }},{{ student.postScore }},{{ student.lg }}
@@ -82,6 +84,18 @@ Student ID,Pre Test Score,Post Test Score,Learning Gain
         {% endfor %}
     </table>
 </fieldset>
+<fieldset>
+<h3>{{ "Test Item csv for analysis" }}</h3>
+<textarea cols="100" rows="20">
+   Pre-Survey: {{ survey1Name }}
+   Post Survey: {{ survey2Name }}
+Test Item Numnber, Pre Test Item Difficulty,{% if pbc %}Pre Test PBC,{% endif %}{% if itemD %}Pre Test Item Discrimination,{% endif %}Post Test Item Difficulty,{% if pbc %}Post Test PBC,{% endif %}{% if itemD %}Post Test Item Discrimination{% endif %},Learning Gain
+{% for testItem in testItemResults %}
+{{ loop.index }},{{ testItem.pre }},{% if pbc %}{{ preTestItemPbc[loop.index] }},{% endif %}{% if itemD %}{{ preTestItemDisc[loop.index] }},{% endif %}{{ testItem.post }},{% if pbc %}{{ postTestItemPbc[loop.index] }},{% endif %}{% if itemD %}{{ postTestItemDisc[loop.index] }},{% endif %}{{ testItem.lg }}
+{% endfor %}
+</textarea>
+</fieldset>
+
 <fieldset>
     <legend>{{ "Item Performance by Fundamental Statement"|trans }}</legend>
     <table class="table table-striped">

@@ -85,6 +85,7 @@ class AnalysisController extends AbstractController {
                 //create new survey. We will delete it at the end of this function
                 $survey1 = $this->_createSurvey($csv1, $person, new \DateTime());
             }
+            $survey1Name = $survey1->getDisplayName();
             $survey2 = $form->get('survey2')->getData();
             if(!$survey2){
                 $file2 = $form['file2']->getData();
@@ -101,6 +102,7 @@ class AnalysisController extends AbstractController {
                 //create new survey. We will delete it at the end of this function
                 $survey2 = $this->_createSurvey($csv2, $person, new \DateTime());
             }
+            $survey2Name = $survey2->getDisplayName();
             $lgstudents = $form->get('lgstudents')->getData();
             $lgtest = $form->get('lgtest')->getData();
             $itemDiscrim = $form->get('discrim')->getData();
@@ -177,6 +179,8 @@ class AnalysisController extends AbstractController {
                     'itemD'=> $itemDiscrim,
                     'preTestItemDisc' => $preTestItemDisc,
                     'postTestItemDisc' => $postTestItemDisc,
+                    'survey1Name' => $survey1Name,
+                    'survey2Name' => $survey2Name
                 ]);
             //If the MCI data was uploaded, remove the MCI data and the survey data
             if($removeSurvey1){
