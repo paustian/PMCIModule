@@ -1,0 +1,53 @@
+
+<div>
+    <h2>{{ "Survey Data"|trans }}</h2>
+    <p>{{ "The number of students is: "|trans }} {{ numStudents }}</p>
+    <p>{{ "The average on the MCI for this group was: "|trans }}{{ average }}</p>
+    <p>{{ "The date of the survey was: "|trans }}{{ surData[0].respDate | date('Y-m-d') }}</p>
+    <p>{{ "The survey id is: "|trans }}{{ surveyId }}</p>
+    <table id="tableToSort" class="table table-striped">
+        <thead>
+        <tr>
+            <th>{{ "Student ID"|trans }}</th>
+            <th>{{ "GPA"|trans }}</th>
+            <th>{{ "Race"|trans }}</th>
+            <th>{{ "Sex"|trans }}</th>
+            <th>{{ "Major"|trans }}</th>
+            <th>{{ "ESL"|trans }}</th>
+            <th>{{ "Score"|trans }}</th>
+        </tr>
+        </thead>
+        <tbody>
+        {% for survey in surData %}
+        <tr>
+            <td>{{ survey.studentId }}</td>
+            <td>{{ survey.gpa }}</td>
+            <td>{% if survey.race == 1 %}
+                American Indian/Alaskan Native
+                {% elseif survey.race == 2 %}
+                Black or African American
+                {% elseif survey.race == 3 %}
+                Asian or Pacific Islander
+                {% elseif survey.race == 4 %}
+                Hispanic/Latino
+                {% elseif survey.race == 5 %}
+                White
+                {% elseif survey.race == 6 %}
+                Other or NR
+                {% endif %}
+            <td>{% if survey.sex == 1 %}Male{% else %}Female{% endif %}</td>
+            <td>{{ survey.major }}</td>
+            <td>{% if survey.esl == 2 %}No{% else%}2nd Language{% endif %}</td>
+            <td>{{ scores[loop.index0] }}</td>
+        </tr>
+        {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% block footer %}
+{{ pageAddAsset('stylesheet', asset('jquery-ui/themes/base/jquery-ui.min.css')) }}
+{{ pageAddAsset('javascript', asset('jquery-ui/jquery-ui.min.js'), constant('Zikula\\ThemeModule\\Engine\\AssetBag::WEIGHT_JQUERY_UI')) }}
+{{ pageAddAsset('stylesheet', 'https://cdn.datatables.net/1.10.20/css/jquery.dataTables.css') }}
+{{ pageAddAsset('javascript', 'https://cdn.datatables.net/1.10.20/js/jquery.dataTables.js') }}
+{{ pageAddAsset('javascript', zasset('@PaustianPMCIModule:js/Paustian.PMCIModule.modifysurveys.js')) }}
+{% endblock %}

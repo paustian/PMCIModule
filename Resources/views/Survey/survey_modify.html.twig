@@ -26,6 +26,8 @@
             {% endif %}
             <td>{{ survey.surveyDate|date("m/d/Y") }}</td>
             <td class="actions">
+                <a href="{{ path('paustianpmcimodule_survey_view', { survey: survey.id }) }}" class="fas fa-eye"
+                   title="{{ "View survey data"|trans }}"></a>
                 <a href="{{ path('paustianpmcimodule_survey_edit', { survey: survey.id }) }}" class="fas fa-edit"
                    title="{{ "Edit a survey"|trans }}"></a>
                 <a href="{{ path('paustianpmcimodule_survey_delete', { survey: survey.id }) }}" class="fas fa-trash"

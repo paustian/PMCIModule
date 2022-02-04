@@ -127,6 +127,49 @@ class SurveyController extends AbstractController {
         $response = $this->render('@PaustianPMCIModule/Survey/survey_edit.html.twig', array('form' => $form->createView(),));
         return $response;
     }
+
+    /**
+     *
+     * @Route("/view/{survey}")
+     *
+     * View responses to a survey, especially giving the number of responses
+     * @param $request
+     * @param $survey
+     */
+    public function viewAction(Request $request, int $survey){
+        //make sure the person is logged in. You need to be a user so I can keep track of you
+        //and so the user of the MCI can have their data analyzed.
+        if(!$this->currentUserApi->isLoggedIn()) {
+            $this->addFlash('error', $this->trans('You need to log in or register as a user before see your surveys.'));
+            return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
+        }
+        if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADD)) {
+            $this->addFlash('error', $this->trans('You do not have pemission to access the surveys. You may need to wait until you are authorized by the MCI admin, Timothy Paustian.'));
+            return $this->redirect($this->generateUrl('paustianpmcimodule_analysis_index'));
+        }
+
+        $surRepo = $this->getDoctrine()->getManager()->getRepository('Paustian\PMCIModule\Entity\MCIDataEntity');
+        $surData = $surRepo->findBy(['surveyId' => $survey]);
+        $numStudents = count($surData);
+        $scores = [];
+        $key = $surRepo->getKey();
+        $totalPoints = 0;
+        foreach($surData as $indSurvey){
+            $indSurveyArray = $indSurvey->toArray();
+            $inScore = $surRepo->gradeStudent($indSurveyArray, $key);
+            $scores[] = round($inScore, 2);
+            $totalPoints += $inScore;
+        }
+        $average = $totalPoints/$numStudents;
+        return $this->render('@PaustianPMCIModule/Survey/survey_view.html.twig', [
+            'surData' => $surData,
+            'numStudents' => $numStudents,
+            'scores' => $scores,
+            'average' => $average,
+            'surveyId'=> $survey
+        ]);
+
+    }
     /**
      * Upload MCI survey data to the database.
      *
