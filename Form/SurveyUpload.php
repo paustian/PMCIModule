@@ -43,10 +43,14 @@ class SurveyUpload extends AbstractType
                 ['label' => 'Upload File',
                 'required' => true,
                 'mapped' => false,
-                'constraints' => [
-                    new File(['maxSize' => '10240k', 'mimeTypes' => ['text/csv','text/plain']]),
-                    'mimeTypeMessage' => 'Please make sure you are uploading a text, csv file'
-                    ]
+                'constraints' => new File(null,
+                    1024000,
+                                    null,
+                                    ['text/csv','text/plain'],
+                                    'The file was not found.',
+                                    'The file is unreadable.',
+                                    'Your file is too large.',
+                                    'The extention of your file must be .csv or .txt and be a text file.')
                 ])
             ->add('savedata', CheckboxType::class, [
                         'label' => 'I understand that uploading my data will make it available to others',

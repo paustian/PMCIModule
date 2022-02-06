@@ -8,12 +8,18 @@
 
 namespace Paustian\PMCIModule\Controller;
 
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Persistence\ManagerRegistry;
 use Paustian\PMCIModule\Entity\PersonEntity;
 use Paustian\PMCIModule\Entity\SurveyEntity;
 use Paustian\PMCIModule\Form\Analysis;
+use Symfony\Contracts\Translation\TranslatorInterface;
 use Zikula\Bundle\CoreBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
+use Zikula\ExtensionsModule\AbstractExtension;
+use Zikula\ExtensionsModule\Api\ApiInterface\VariableApiInterface;
+use Zikula\PermissionsModule\Api\ApiInterface\PermissionApiInterface;
 use Zikula\ThemeModule\Engine\Annotation\Theme;
 use Zikula\UsersModule\Api\CurrentUserApi;
 use Symfony\Component\HttpFoundation\Response;
@@ -22,20 +28,29 @@ use Symfony\Component\HttpFoundation\Response;
 
 
 class AnalysisController extends AbstractController {
+
+    public function __construct(AbstractExtension $extension,
+                                PermissionApiInterface $permissionApi,
+                                VariableApiInterface $variableApi,
+                                TranslatorInterface $translator,
+                                CurrentUserApi $currentUserApi,
+                                EntityManagerInterface $entityManagerInterface){
+        parent::__construct($extension, $permissionApi, $variableApi, $translator);
+        $this->currUser = $currentUserApi;
+        $this->em = $entityManagerInterface;
+    }
     /**
      * @Route("")
      * @param $request - the incoming request.
      * The main entry point
      *
      * @param Request $request
-     * @param CurrentUserApi $currentUserApi
      * @return Response
      */
-    public function indexAction(Request $request,
-                                CurrentUserApi $currentUserApi)  {
+    public function index(Request $request)  {
         //make sure the person is logged in. You need to be a user so I can keep track of you
         //and so the user of the MCI can have their data analyzed.
-        if(!$currentUserApi->isLoggedIn()) {
+        if(!$this->currUser->isLoggedIn()) {
             $this->addFlash('error', $this->trans('You need to register as a user before you can obtain the MCI and then ask for a copy of the MCI before you can do analysis.'));
             return $this->redirect($this->generateUrl('zikulausersmodule_registration_register'));
         }
@@ -46,13 +61,12 @@ class AnalysisController extends AbstractController {
             return $this->redirect($this->generateUrl('paustianpmcimodule_person_edit'));
         }
 
-        $em = $this->getDoctrine()->getManager();
-        $qb = $em->createQueryBuilder('u');
+        $qb = $this->em->createQueryBuilder('u');
         $qb->select('u')
             ->from('Paustian\PMCIModule\Entity\SurveyEntity', 'u');
         //restrict access to only your surveys unless you have admin access to this module
         $qb->where($qb->expr()->eq('u.userId', ":uid"))
-                ->setParameter("uid", $currentUserApi->get('uid'));
+                ->setParameter("uid", $this->currUser->get('uid'));
         $query = $qb->getQuery();
         $results = $query->getResult();
 
@@ -60,8 +74,8 @@ class AnalysisController extends AbstractController {
 
         $form->handleRequest($request);
 
-        $person = $em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($currentUserApi);
-        $mciRepo = $em->getRepository('Paustian\PMCIModule\Entity\MCIDataEntity');
+        $person = $this->em->getRepository('Paustian\PMCIModule\Entity\PersonEntity')->getCurrentPerson($this->currUser);
+        $mciRepo = $this->em->getRepository('Paustian\PMCIModule\Entity\MCIDataEntity');
         $removeSurvey1 = $removeSurvey2 = false;
 
         if($form->isSubmitted() && $form->isValid()) {
@@ -131,7 +145,7 @@ class AnalysisController extends AbstractController {
             if($gpa !== null){
                 $options[] = ['=', 'gpa', $gpa];
             }
-            $em = $this->getDoctrine()->getManager();
+
             //grab the key from the database. This is the first entry.
             $key = $mciRepo->getKey();
             $matchedStudents = [];
@@ -184,16 +198,16 @@ class AnalysisController extends AbstractController {
                 ]);
             //If the MCI data was uploaded, remove the MCI data and the survey data
             if($removeSurvey1){
-                $q = $em->createQuery('delete from Paustian\PMCIModule\Entity\MCIDataEntity m where m.surveyId =' . $survey1->getId());
+                $q = $this->em->createQuery('delete from Paustian\PMCIModule\Entity\MCIDataEntity m where m.surveyId =' . $survey1->getId());
                 $q->execute();
-                $em->remove($survey1);
+                $this->em->remove($survey1);
             }
             if($removeSurvey2){
-                $q = $em->createQuery('delete from Paustian\PMCIModule\Entity\MCIDataEntity m where m.surveyId =' . $survey2->getId());
+                $q = $this->em->createQuery('delete from Paustian\PMCIModule\Entity\MCIDataEntity m where m.surveyId =' . $survey2->getId());
                 $q->execute();
-                $em->remove($survey2);
+                $this->em->remove($survey2);
             }
-            $em->flush();
+            $this->em->flush();
             return $response;
         }
 
@@ -209,8 +223,7 @@ class AnalysisController extends AbstractController {
      */
 
     private function _getSurveyData($inFile) {
-        $em = $this->getDoctrine()->getManager();
-        $surveyRepo = $em->getRepository('Paustian\PMCIModule\Entity\SurveyEntity');
+        $surveyRepo = $this->em->getRepository('Paustian\PMCIModule\Entity\SurveyEntity');
         $csv = $surveyRepo->parseCsv($inFile);
         $error = $surveyRepo->validateCSV($csv);
         if($error != ''){
@@ -228,10 +241,9 @@ class AnalysisController extends AbstractController {
         $survey->setUserId($person->getUserId());
         $survey->setPrePost($preSurvey);
         $survey->setSurveyDate($date);
-        $em = $this->getDoctrine()->getManager();
-        $em->persist($survey);
+        $this->em->persist($survey);
         //The data needs to be flushed to get the survey ID. Once we have this, we can then
-        $em->flush();
+        $this->em->flush();
         $surveyID = $survey->getId();
 
         //now persist the data from the survey
@@ -239,9 +251,9 @@ class AnalysisController extends AbstractController {
             $mciData = new \Paustian\PMCIModule\Entity\MCIDataEntity($studentData);
             $mciData->setSurveyId($surveyID);
             $mciData->setRespDate($date);
-            $em->persist($mciData);
+            $this->em->persist($mciData);
         }
-        $em->flush();
+        $this->em->flush();
         return $survey;
     }
 }

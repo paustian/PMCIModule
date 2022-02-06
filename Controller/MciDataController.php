@@ -25,7 +25,7 @@ class MciDataController  extends AbstractController {
      *
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
-    public function indexAction(Request $request) {
+    public function index(Request $request) {
         //security check
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_ADMIN)) {
             throw new AccessDeniedException($this->trans('You do not have pemission to access the Book admin interface.'));
@@ -46,7 +46,7 @@ class MciDataController  extends AbstractController {
      *
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
-    public function editAction(Request $request, MCIDataEntity $mciData = null) {
+    public function edit(Request $request, MCIDataEntity $mciData = null) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException($this->trans('You do not have pemission to Edit a Person.'));
         }
@@ -61,7 +61,7 @@ class MciDataController  extends AbstractController {
      * @return Response back to the modification screen
      * @throws AccessDeniedException Thrown if the user does not have the appropriate access level for the function.
      */
-    public function deleteAction(Request $request, MCIDataEntity $mciData) {
+    public function delete(Request $request, MCIDataEntity $mciData) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_DELETE)) {
             throw new AccessDeniedException($this->trans('You do not have pemission to delete a Person.'));
         }
@@ -76,7 +76,7 @@ class MciDataController  extends AbstractController {
      * @param Request $request
      * @return Response
      */
-    public function modifyAction(Request $request) {
+    public function modify(Request $request) {
         if (!$this->hasPermission($this->name . '::', '::', ACCESS_EDIT)) {
             throw new AccessDeniedException($this->trans('You do not have pemission to modify a Person.'));
         }

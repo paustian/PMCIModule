@@ -24,7 +24,7 @@
             {% else %}
                 <td>Pre-survey</td>
             {% endif %}
-            <td>{{ survey.surveyDate|date("m/d/Y") }}</td>
+            <td data-order="{{ survey.surveyDate|date("Y-m-d") }}">{{ survey.surveyDate|date("m/d/Y") }}</td>
             <td class="actions">
                 <a href="{{ path('paustianpmcimodule_survey_view', { survey: survey.id }) }}" class="fas fa-eye"
                    title="{{ "View survey data"|trans }}"></a>
