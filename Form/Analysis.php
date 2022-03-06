@@ -21,23 +21,6 @@ use Zikula\UsersModule\Api\CurrentUserApi;
 
 class Analysis extends AbstractType
 {
-    /**
-     * @var TranslatorInterface
-     */
-    private $translator;
-
-    private $currentUserApi;
-
-    /**
-     * BlockType constructor.
-     * @param TranslatorInterface $translator
-     */
-    public function __construct(
-        TranslatorInterface $translator,
-        CurrentUserApi $currentUserApi)   {
-        $this->translator = $translator;
-        $this->currentUserApi = $currentUserApi;
-    }
 
     public function buildForm(FormBuilderInterface $builder, array $options)
     {

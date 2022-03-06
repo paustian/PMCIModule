@@ -16,7 +16,7 @@ class MCIDataEntityRepository extends EntityRepository
 {
 
     /**
-     * Give two surveys, find all the students who took both and then put them in an array.
+     * Given two surveys, find all the students who took both and then put them in an array.
      * The array structure is:
      * $matchedStudents [studentId]
      *                  [0] - firstSurvey responses
@@ -182,7 +182,7 @@ class MCIDataEntityRepository extends EntityRepository
     private function _calcLearningGain($preScore, $postScore)
     {
         $lg = ($postScore - $preScore) / (100 - $preScore);
-        return round($lg, 3);
+        return round($lg, 7);
     }
 
     /**
@@ -390,5 +390,4 @@ class MCIDataEntityRepository extends EntityRepository
         }
         return $correct;
     }
-
 }

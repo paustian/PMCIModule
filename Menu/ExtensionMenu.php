@@ -85,6 +85,10 @@ class ExtensionMenu implements ExtensionMenuInterface
             'route' => 'paustianpmcimodule_analysis_index',
         ])->setAttribute('icon', 'fas fa-chart-bar');
 
+        $menu['Surveys']->addChild('Get Matched Students', [
+            'route' => 'paustianpmcimodule_analysis_getmatchedsurveys',
+        ])->setAttribute('icon', 'fas fa-poll');
+
         return 0 === $menu->count() ? null : $menu;
     }
 
